@@ -4,6 +4,9 @@ namespace Riffle.Utilities
 {
     public enum GameType
     {
-        Roundabout = 1
+        Roundabout = 1,
+
+        Min = 1,
+        Max = 1
     }
 }

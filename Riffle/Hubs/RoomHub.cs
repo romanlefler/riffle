@@ -9,27 +9,35 @@ namespace Riffle.Hubs
 {
     public class RoomHub : Hub
     {
-        public async Task CreateRoom(GameType game)
+        public async Task CreateRoom(int game)
         {
             string host = Context.ConnectionId;
+
+            GameType gtype = (GameType)game;
+            if(gtype < GameType.Min || gtype > GameType.Max)
+            {
+                await Clients.Caller.SendAsync("RoomError", "Not a valid game ID.");
+                return;
+            }
+
             Room room;
             try
             {
-                room = new(host, game);
+                room = new(host, gtype);
             }
-            catch(TooManyRoomsException)
+            catch (TooManyRoomsException)
             {
                 await Clients.Caller.SendAsync("RoomError", "Couldn't create a room.");
                 return;
             }
 
             bool addSuccess = RoomManager.AddRoom(room);
-            if(!addSuccess)
+            if (!addSuccess)
             {
                 await Clients.Caller.SendAsync("RoomError", "You can't create multiple rooms.");
             }
 
-            await Groups.AddToGroupAsync(Context.ConnectionId, room.JoinCode);
+            await Groups.AddToGroupAsync(host, room.JoinCode);
             await Clients.Caller.SendAsync("RoomCreated", room.JoinCode);
         }
 
@@ -60,6 +68,11 @@ namespace Riffle.Hubs
             }
         }
 
+        public async Task StringMsg(string msgName, string content)
+        {
+
+        }
+
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
             Room? room;
@@ -69,7 +82,7 @@ namespace Riffle.Hubs
                 bool removeSuccess = RoomManager.RemoveRoom(room);
                 if(removeSuccess)
                 {
-                    await Clients.Group(room.JoinCode).SendAsync("RoomClosed", room.JoinCode);
+                    await Clients.Group(room.JoinCode).SendAsync("RoomClosed");
                 }
             }
 
