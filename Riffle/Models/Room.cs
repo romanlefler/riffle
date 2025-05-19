@@ -13,7 +13,7 @@ namespace Riffle.Models
 
         public GameType Game { get; }
 
-        public HashSet<string> Participants { get; }
+        public HashSet<RoomMember> Participants { get; }
 
         public Room(string hostConnectionId, GameType game)
         {
@@ -27,5 +27,13 @@ namespace Riffle.Models
             Game = game;
             Participants = [];
         }
+
+        public void RemoveParticipant(string connectionId)
+        {
+            RoomMember member = new RoomMember(connectionId, "");
+            // RoomMembers with the same connectionId all have the same hash and are equal
+            Participants.Remove(member);
+        }
+
     }
 }

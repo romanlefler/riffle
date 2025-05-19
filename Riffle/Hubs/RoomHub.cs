@@ -33,12 +33,13 @@ namespace Riffle.Hubs
             await Clients.Caller.SendAsync("RoomCreated", room.JoinCode);
         }
 
-        public async Task JoinRoom(string joinCode)
+        public async Task JoinRoom(string joinCode, string name)
         {
             Room? room;
             if(RoomManager.Rooms.TryGetValue(joinCode, out room))
             {
-                room.Participants.Add(Context.ConnectionId);
+                RoomMember member = new(Context.ConnectionId, name);
+                room.Participants.Add(member);
                 await Groups.AddToGroupAsync(Context.ConnectionId, joinCode);
                 await Clients.Group(joinCode).SendAsync("UserJoined", Context.ConnectionId);
             }
@@ -53,7 +54,7 @@ namespace Riffle.Hubs
             Room? room;
             if(RoomManager.Rooms.TryGetValue(joinCode, out room))
             {
-                room.Participants.Remove(Context.ConnectionId);
+                room.RemoveParticipant(Context.ConnectionId);
                 await Groups.RemoveFromGroupAsync(Context.ConnectionId, joinCode);
                 await Clients.Group(joinCode).SendAsync("UserLeft", Context.ConnectionId);
             }
