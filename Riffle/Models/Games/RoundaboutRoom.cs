@@ -1,4 +1,5 @@
-﻿using Riffle.Utilities;
+﻿using Microsoft.AspNetCore.SignalR;
+using Riffle.Utilities;
 
 namespace Riffle.Models.Games
 {
@@ -6,27 +7,61 @@ namespace Riffle.Models.Games
     {
         private const int MAX_PLAYER_COUNT = 8;
 
-        private readonly List<RoundaboutMember> members;
+        private readonly List<RoundaboutMember> _members;
+
+        private Stage _stage;
 
         public RoundaboutRoom(string hostConnId) : base(hostConnId, GameType.Roundabout)
         {
-            members = new(8);
+            _stage = Stage.Lobby;
+            _members = new(8);
         }
 
         public override void AddMember(string connectionId, string name)
         {
             RoundaboutMember m = new RoundaboutMember(connectionId, name);
-            members.Add(m);
+            _members.Add(m);
         }
 
         public override void RemoveMember(string connectionId)
         {
-            members.RemoveAll(m => m.ConnectionId == connectionId);
+            _members.RemoveAll(m => m.ConnectionId == connectionId);
+        }
+
+        public override IReadOnlyCollection<RoomMember> GetMembers()
+        {
+            return _members.AsReadOnly();
         }
 
         public override bool IsFull()
         {
-            return members.Count >= MAX_PLAYER_COUNT;
+            return _members.Count >= MAX_PLAYER_COUNT;
+        }
+
+        public override void StartGame()
+        {
+            _stage = Stage.ChooseWord;
+        }
+
+        public override async Task StringMsg(string connId, IHubCallerClients clients, string msgName, string msgContent)
+        {
+            RoundaboutMember? m = _members.Find(k => k.ConnectionId == connId);
+            ISingleClientProxy host = clients.Client(HostConnectionId);
+            switch(msgName)
+            {
+                case "ChooseWord":
+                    if (m == null || _stage != Stage.ChooseWord) return;
+                    m.SecretWord = msgContent;
+                    await host.SendAsync("UserChoseWord", connId);
+                    return;
+            }
+        }
+
+        private enum Stage
+        {
+            Lobby,
+            ChooseWord,
+            GuessWord
         }
 
     }

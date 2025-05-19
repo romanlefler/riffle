@@ -54,8 +54,9 @@ namespace Riffle.Hubs
             if(RoomManager.Rooms.TryGetValue(joinCode, out room))
             {
                 room.AddMember(Context.ConnectionId, name);
+                RoomManager.MapUserToRoom(Context.ConnectionId, room);
                 await Groups.AddToGroupAsync(Context.ConnectionId, joinCode);
-                await Clients.Client(room.HostConnectionId).SendAsync("UserJoined", Context.ConnectionId);
+                await Clients.Client(room.HostConnectionId).SendAsync("UserJoined", Context.ConnectionId, name);
             }
             else
             {
@@ -65,18 +66,28 @@ namespace Riffle.Hubs
 
         public async Task StartGame()
         {
+            Room? room;
+            if(RoomManager.UserToRoom.TryGetValue(Context.ConnectionId, out room))
+            {
+                if (room.HostConnectionId != Context.ConnectionId) return;
 
+                room.StartGame();
+            }
         }
 
         public async Task StringMsg(string msgName, string content)
         {
+            Room? room;
+            RoomManager.UserToRoom.TryGetValue(Context.ConnectionId, out room);
 
+            if (room != null) await room.StringMsg(Context.ConnectionId, Clients, msgName, content);
+            else await Clients.Caller.SendAsync("RoomError", "Room doesn't exist.");
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
             Room? room;
-            RoomManager.HostToRoom.TryGetValue(Context.ConnectionId, out room);
+            RoomManager.UserToRoom.TryGetValue(Context.ConnectionId, out room);
             if(room != null)
             {
                 string joinCode = room.JoinCode;
@@ -91,6 +102,7 @@ namespace Riffle.Hubs
                 else
                 {
                     room.RemoveMember(Context.ConnectionId);
+                    RoomManager.UnmapUser(Context.ConnectionId);
                     await Clients.Client(room.HostConnectionId).SendAsync("UserLeft", Context.ConnectionId);
                 }
             }

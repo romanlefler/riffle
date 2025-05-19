@@ -1,6 +1,8 @@
 ﻿// Copyright 2025 Roman Lefler
 
+using Microsoft.AspNetCore.SignalR;
 using Riffle.Utilities;
+using System.Runtime.CompilerServices;
 
 namespace Riffle.Models
 {
@@ -28,7 +30,16 @@ namespace Riffle.Models
 
         public abstract void AddMember(string connectionId, string name);
 
+        public abstract IReadOnlyCollection<RoomMember> GetMembers();
+
         public abstract bool IsFull();
+
+        public abstract void StartGame();
+
+        public virtual async Task StringMsg(string connId, IHubCallerClients clients, string msgName, string msgContent)
+        {
+            return;
+        }
 
     }
 }
