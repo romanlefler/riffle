@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Riffle.Data;
 using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.EntityFrameworkCore;
+using Riffle.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,8 @@ builder.Services.AddControllersWithViews();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -39,5 +42,6 @@ app.MapControllerRoute(
     .WithStaticAssets();
 app.MapRazorPages();
 
+app.MapHub<RoomHub>("/RoomHub");
 
 app.Run();
