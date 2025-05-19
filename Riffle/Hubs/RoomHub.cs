@@ -55,7 +55,7 @@ namespace Riffle.Hubs
             {
                 room.AddMember(Context.ConnectionId, name);
                 await Groups.AddToGroupAsync(Context.ConnectionId, joinCode);
-                await Clients.Group(joinCode).SendAsync("UserJoined", Context.ConnectionId);
+                await Clients.Client(room.HostConnectionId).SendAsync("UserJoined", Context.ConnectionId);
             }
             else
             {
@@ -63,15 +63,9 @@ namespace Riffle.Hubs
             }
         }
 
-        public async Task LeaveRoom(string joinCode)
+        public async Task StartGame()
         {
-            Room? room;
-            if(RoomManager.Rooms.TryGetValue(joinCode, out room))
-            {
-                room.RemoveMember(Context.ConnectionId);
-                await Groups.RemoveFromGroupAsync(Context.ConnectionId, joinCode);
-                await Clients.Group(joinCode).SendAsync("UserLeft", Context.ConnectionId);
-            }
+
         }
 
         public async Task StringMsg(string msgName, string content)
@@ -85,10 +79,19 @@ namespace Riffle.Hubs
             RoomManager.HostToRoom.TryGetValue(Context.ConnectionId, out room);
             if(room != null)
             {
-                bool removeSuccess = RoomManager.RemoveRoom(room);
-                if(removeSuccess)
+                string joinCode = room.JoinCode;
+                if (room.HostConnectionId == Context.ConnectionId)
                 {
-                    await Clients.Group(room.JoinCode).SendAsync("RoomClosed");
+                    bool removeSuccess = RoomManager.RemoveRoom(room);
+                    if (removeSuccess)
+                    {
+                        await Clients.Group(joinCode).SendAsync("RoomClosed");
+                    }
+                }
+                else
+                {
+                    room.RemoveMember(Context.ConnectionId);
+                    await Clients.Client(room.HostConnectionId).SendAsync("UserLeft", Context.ConnectionId);
                 }
             }
 
