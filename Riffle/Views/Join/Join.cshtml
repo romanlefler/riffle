@@ -1,0 +1,24 @@
+﻿
+@{
+    ViewData["Title"] = "Join Game";
+}
+
+<h1>Join Game</h1>
+
+<form asp-action="Join" method="post">
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="Name" required />
+    <label for="joinCode">Join Code:</label>
+    <input type="text" id="joinCode" name="JoinCode" required />
+    <button type="submit">Join Room</button>
+</form>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="validation-summary-errors">
+        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+        {
+            <p>@error.ErrorMessage</p>
+        }
+    </div>
+}

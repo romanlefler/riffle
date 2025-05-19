@@ -38,5 +38,19 @@ namespace Riffle.Utilities
             return code;
         }
 
+        public static string NormalizeCode(string joinCode)
+        {
+            string newCode = joinCode.Trim();
+            newCode = newCode.Replace('0', 'O');
+            newCode = newCode.Replace('1', 'I');
+            newCode = newCode.ToUpper();
+            return newCode;
+        }
+
+        public static bool IsValidCode(string joinCode)
+        {
+            return joinCode.Length == LEN && joinCode.All(c => validChars.Contains(c));
+        }
+
     }
 }

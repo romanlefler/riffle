@@ -35,5 +35,21 @@ namespace Riffle.Models
             Participants.Remove(member);
         }
 
+        public int GetMaxPlayerCount()
+        {
+            switch(Game)
+            {
+                case GameType.Roundabout:
+                    return 8;
+                default:
+                    return 1;
+            }
+        }
+        
+        public bool IsFull()
+        {
+            return Participants.Count >= GetMaxPlayerCount();
+        }
+
     }
 }
