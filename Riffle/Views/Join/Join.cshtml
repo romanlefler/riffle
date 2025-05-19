@@ -5,11 +5,11 @@
 
 <h1>Join Game</h1>
 
-<form asp-action="Join" method="post">
+<form asp-action="JoinGame" method="post">
     <label for="name">Name:</label>
     <input type="text" id="name" name="Name" required />
     <label for="joinCode">Join Code:</label>
-    <input type="text" id="joinCode" name="JoinCode" required />
+    <input type="text" id="joinCode" name="joinCode" value="@ViewData["code"]" required />
     <button type="submit">Join Room</button>
 </form>
 

@@ -11,18 +11,20 @@ namespace Riffle.Controllers
     public class JoinController : Controller
     {
         [HttpGet("/Join")]
-        public IActionResult Join()
+        public IActionResult JoinGet(string? code)
         {
-            return View();
+            if (code != null) ViewData["code"] = code;
+
+            return View("Join");
         }
 
-        [HttpPost("/Join")]
-        public IActionResult Join(string joinCode)
+        [HttpPost("/Join/JoinGame")]
+        public IActionResult JoinGame(string joinCode)
         {
             if(string.IsNullOrWhiteSpace(joinCode))
             {
                 ModelState.AddModelError("JoinCode", "Empty join code.");
-                return View();
+                return View("Join");
             }
 
             string norm = JoinCode.NormalizeCode(joinCode);
@@ -30,20 +32,20 @@ namespace Riffle.Controllers
             if(!JoinCode.IsValidCode(norm))
             {
                 ModelState.AddModelError("JoinCode", "Invalid join code.");
-                return View();
+                return View("Join");
             }
 
             RoomManager.Rooms.TryGetValue(norm, out Room? room);
             if(room == null)
             {
                 ModelState.AddModelError("JoinCode", "That room doesn't exist.");
-                return View();
+                return View("Join");
             }
 
             if(room.IsFull())
             {
                 ModelState.AddModelError("JoinCode", "That room is full!");
-                return View();
+                return View("Join");
             }
 
             return RedirectToAction("Play", new { roomId = norm });
