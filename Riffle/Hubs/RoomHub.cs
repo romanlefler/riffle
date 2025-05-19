@@ -2,6 +2,7 @@
 
 using Microsoft.AspNetCore.SignalR;
 using Riffle.Models;
+using Riffle.Models.Games;
 using Riffle.Services;
 using Riffle.Utilities;
 
@@ -16,14 +17,20 @@ namespace Riffle.Hubs
             GameType gtype = (GameType)game;
             if(gtype < GameType.Min || gtype > GameType.Max)
             {
-                await Clients.Caller.SendAsync("RoomError", "Not a valid game ID.");
-                return;
             }
 
             Room room;
             try
             {
-                room = new(host, gtype);
+                switch(gtype)
+                {
+                    case GameType.Roundabout:
+                        room = new RoundaboutRoom(host);
+                        break;
+                    default:
+                        await Clients.Caller.SendAsync("RoomError", "Not a valid game ID.");
+                        return;
+                }
             }
             catch (TooManyRoomsException)
             {
@@ -46,8 +53,7 @@ namespace Riffle.Hubs
             Room? room;
             if(RoomManager.Rooms.TryGetValue(joinCode, out room))
             {
-                RoomMember member = new(Context.ConnectionId, name);
-                room.Participants.Add(member);
+                room.AddMember(Context.ConnectionId, name);
                 await Groups.AddToGroupAsync(Context.ConnectionId, joinCode);
                 await Clients.Group(joinCode).SendAsync("UserJoined", Context.ConnectionId);
             }
@@ -62,7 +68,7 @@ namespace Riffle.Hubs
             Room? room;
             if(RoomManager.Rooms.TryGetValue(joinCode, out room))
             {
-                room.RemoveParticipant(Context.ConnectionId);
+                room.RemoveMember(Context.ConnectionId);
                 await Groups.RemoveFromGroupAsync(Context.ConnectionId, joinCode);
                 await Clients.Group(joinCode).SendAsync("UserLeft", Context.ConnectionId);
             }
