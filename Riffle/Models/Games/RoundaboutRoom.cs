@@ -18,6 +18,7 @@ namespace Riffle.Models.Games
             RoundaboutMember m = new RoundaboutMember(connectionId, name);
             members.Add(m);
         }
+
         public override void RemoveMember(string connectionId)
         {
             members.RemoveAll(m => m.ConnectionId == connectionId);
