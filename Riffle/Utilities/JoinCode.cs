@@ -5,7 +5,7 @@ namespace Riffle.Utilities
     public static class JoinCode
     {
 
-        private static readonly int LEN = 6;
+        private const int LEN = 6;
         private static readonly char[] validChars =
             "ABCDEFGHIJKLMNOPQRSTUVWXYZ23456789".ToCharArray();
 
