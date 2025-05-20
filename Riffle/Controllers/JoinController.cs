@@ -19,7 +19,7 @@ namespace Riffle.Controllers
         }
 
         [HttpPost("/Join/JoinGame")]
-        public IActionResult JoinGame(string joinCode)
+        public IActionResult JoinGame(string name, string joinCode)
         {
             if(string.IsNullOrWhiteSpace(joinCode))
             {
@@ -48,7 +48,9 @@ namespace Riffle.Controllers
                 return View("Join");
             }
 
-            return RedirectToAction("Play", new { roomId = norm });
+            ViewData["joinCode"] = joinCode;
+            ViewData["playerName"] = name;
+            return View("Roundabout");
 
         }
 
