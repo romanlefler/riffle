@@ -25,6 +25,7 @@ These methods are standard for every room.
 | RoomClosed   | Member      |           |             |
 | UserJoined   | Host        | User ID   |             |
 | UserLeft     | Host        | User ID   |             |
+| GameStarted  | Any         |           |             |
 | StringMsg    | Any         | Msg Name  | Msg Content |
 
 # Game-Specific
