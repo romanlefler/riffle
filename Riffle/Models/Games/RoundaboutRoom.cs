@@ -47,12 +47,14 @@ namespace Riffle.Models.Games
         {
             RoundaboutMember? m = _members.Find(k => k.ConnectionId == connId);
             ISingleClientProxy host = clients.Client(HostConnectionId);
+            ISingleClientProxy caller = clients.Client(connId);
             switch(msgName)
             {
                 case "ChooseWord":
                     if (m == null || _stage != Stage.ChooseWord) return;
                     m.SecretWord = msgContent;
                     await host.SendAsync("UserChoseWord", connId);
+                    await caller.SendAsync("ChoiceAccepted");
                     return;
             }
         }
