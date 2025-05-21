@@ -5,7 +5,20 @@
 
 <h1>Roundabout</h1>
 
-<p>You&apos;re in!</p>
+<div id="lobbyScreen">
+	<p id="connectingText">Connecting...</p>
+</div>
+
+<div id="choiceScreen" style="display:none;">
+	<p>Choose your secret word!</p>
+	<br />
+	<input type="text" id="choiceBox" />
+	<button id="choiceSubmit">Submit</button>
+</div>
+
+<div id="chosenScreen" style="display:none;">
+	<p id="chosenText"></p>
+</div>
 
 <div id="joinCodeData" data-code="@ViewData["joinCode"]"></div>
 <div id="playerNameData" data-name="@ViewData["playerName"]"></div>
