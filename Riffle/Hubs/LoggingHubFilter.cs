@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 
+namespace Riffle.Hubs;
+
 public class LoggingHubFilter : IHubFilter
 {
     private readonly ILogger<LoggingHubFilter> _logger;
@@ -15,7 +17,7 @@ public class LoggingHubFilter : IHubFilter
     {
         try
         {
-            _logger.LogError("Ran hub method: {HubMethod}", invocationContext.HubMethodName);
+            _logger.LogInformation("Ran hub method: {HubMethod}", invocationContext.HubMethodName);
             return await next(invocationContext);
         }
         catch (Exception ex)
