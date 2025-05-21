@@ -50,7 +50,14 @@ namespace Riffle.Controllers
 
             ViewData["joinCode"] = joinCode;
             ViewData["playerName"] = name;
-            return View("Roundabout");
+
+            string view = room.Game switch
+            {
+                GameType.Roundabout => "Roundabout",
+                _ => "Join"
+            };
+
+            return View(view);
 
         }
 
