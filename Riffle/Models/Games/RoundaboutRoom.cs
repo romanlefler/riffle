@@ -43,6 +43,20 @@ namespace Riffle.Models.Games
             _stage = Stage.ChooseWord;
         }
 
+        private bool AllPlayersChose()
+        {
+            foreach(RoundaboutMember m in _members)
+            {
+                if (m.SecretWord is null) return false;
+            }
+            return true;
+        }
+
+        private void StartGuessing()
+        {
+            _stage = Stage.GuessWord;
+        }
+
         public override async Task StringMsg(string connId, IHubCallerClients clients, string msgName, string msgContent)
         {
             RoundaboutMember? m = _members.Find(k => k.ConnectionId == connId);
@@ -55,6 +69,12 @@ namespace Riffle.Models.Games
                     m.SecretWord = msgContent;
                     await host.SendAsync("UserChoseWord", connId);
                     await caller.SendAsync("ChoiceAccepted");
+
+                    if (AllPlayersChose())
+                    {
+                        StartGuessing();
+                        await clients.Group(JoinCode).SendAsync("GuessingStarted");
+                    }
                     return;
             }
         }

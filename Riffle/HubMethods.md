@@ -42,8 +42,9 @@ These methods are standard for every room.
 
 ### Client Methods
 
-| Name           | Callee  | Param 1   |
-|----------------|---------|-----------|
-| UserChoseWord  | Host    | User ID   |
-| ChoiceAccepted | Member  | User ID   |
+| Name             | Callee  | Param 1   |
+|------------------|---------|-----------|
+| UserChoseWord    | Host    | User ID   |
+| ChoiceAccepted   | Member  | User ID   |
+| GuessingAccepted | Any     |           |
 
