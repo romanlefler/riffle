@@ -18,28 +18,30 @@ builder.Services.AddControllersWithViews();
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+#if DEBUG
+builder.Services.AddSignalR(options =>
+{
+    options.AddFilter<LoggingHubFilter>();
+});
+#else
 builder.Services.AddSignalR();
+
+builder.Services.AddResponseCompression(opts =>
+{
+    opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+    ["application/octet-stream"]);
+});
+#endif
 
 var app = builder.Build();
 
-//app.UseResponseCompression();
+#if !DEBUG
+app.UseResponseCompression();
+#endif
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (!app.Environment.IsDevelopment())
 {
-    builder.Services.AddSignalR(options =>
-    {
-        options.AddFilter<LoggingHubFilter>();
-    });
-}
-else
-{
-    builder.Services.AddResponseCompression(opts =>
-    {
-        opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
-        ["application/octet-stream"]);
-    });
-
     app.UseExceptionHandler("/Home/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
