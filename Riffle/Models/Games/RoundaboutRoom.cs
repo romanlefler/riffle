@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.SignalR;
 using Riffle.Utilities;
+using System.Text.RegularExpressions;
 
 namespace Riffle.Models.Games
 {
@@ -7,9 +9,16 @@ namespace Riffle.Models.Games
     {
         private const int MAX_PLAYER_COUNT = 8;
 
+
         private readonly List<RoundaboutMember> _members;
 
         private Stage _stage;
+
+        
+        // The index of the user that's word is being guessed.
+        private int _userUp;
+
+        private string _secretWord;
 
         public RoundaboutRoom(string hostConnId) : base(hostConnId, GameType.Roundabout)
         {
@@ -54,7 +63,29 @@ namespace Riffle.Models.Games
 
         private void StartGuessing()
         {
+            SetUserUp(0);
             _stage = Stage.GuessWord;
+        }
+
+
+        private void SetUserUp(int userIndex)
+        {
+            _userUp = userIndex;
+            RoundaboutMember m = _members[_userUp];
+            string secret = m.SecretWord ?? throw new InvalidOperationException("Secret word was null.");
+
+            // This both makes all whitespace uniform (all spaces)
+            // and makes gets rid of any back-to-back spaces
+            _secretWord = NormString.NormalizeString(secret);
+        }
+
+        private bool TryGuess(string guess)
+        {
+            string guessNorm = NormString.NormalizeString(guess);
+            int tol = _secretWord.Length / 4;
+            int dist = StringDistance.ComputeLevenshtein(guessNorm, _secretWord);
+
+            return dist <= tol;
         }
 
         public override async Task StringMsg(string connId, IHubCallerClients clients, string msgName, string msgContent)
@@ -65,7 +96,10 @@ namespace Riffle.Models.Games
             switch(msgName)
             {
                 case "ChooseWord":
-                    if (m == null || _stage != Stage.ChooseWord) return;
+                    if (m is null || _stage != Stage.ChooseWord) return;
+                    // Host cannot execute this
+                    if (HostConnectionId == connId) return;
+
                     m.SecretWord = msgContent;
                     await host.SendAsync("UserChoseWord", connId);
                     await caller.SendAsync("ChoiceAccepted");
@@ -75,6 +109,20 @@ namespace Riffle.Models.Games
                         StartGuessing();
                         await clients.Group(JoinCode).SendAsync("GuessingStarted");
                     }
+                    return;
+                case "GuessWord":
+                    if (m is null || _stage != Stage.GuessWord) return;
+                    // Host cannot execute this
+                    if (HostConnectionId == connId) return;
+                    // User that's up cannot execute this
+                    if (_members[_userUp] == m) return;
+
+                    if(TryGuess(msgContent))
+                    {
+                        string original = _members[_userUp].SecretWord ?? throw new InvalidOperationException();
+                        await clients.Group(JoinCode).SendAsync("SuccessfulGuess", connId, original);
+                    }
+                    // If it's wrong nothing happens
                     return;
             }
         }

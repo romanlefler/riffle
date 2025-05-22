@@ -38,13 +38,15 @@ These methods are standard for every room.
 
 | Name         | Caller      | Param 1   |
 |--------------|-------------|-----------|
-| ChooseWord   | Member      | User ID   |
+| ChooseWord   | Member      | Word      |
+| GuessWord    | Member      | Word      |
 
 ### Client Methods
 
-| Name             | Callee  | Param 1   |
-|------------------|---------|-----------|
-| UserChoseWord    | Host    | User ID   |
-| ChoiceAccepted   | Member  | User ID   |
-| GuessingAccepted | Any     |           |
+| Name             | Callee  | Param 1   |             |
+|------------------|---------|-----------|-------------|
+| UserChoseWord    | Host    | User ID   |             |
+| ChoiceAccepted   | Member  | User ID   |             |
+| GuessingAccepted | Any     |           |             |
+| SuccessfulGuess  | Any     | User ID   | Secret Word |
 
