@@ -50,7 +50,7 @@ namespace Riffle.Models.Games
 
         public override bool StartGame()
         {
-            if (_members.Count >= MIN_PLAYER_COUNT) return false;
+            if (_members.Count < MIN_PLAYER_COUNT) return false;
 
             _stage = Stage.ChooseWord;
             return true;
