@@ -53,10 +53,14 @@ namespace Riffle.Hubs
             Room? room;
             if(RoomManager.Rooms.TryGetValue(joinCode, out room))
             {
-                room.AddMember(Context.ConnectionId, name);
-                RoomManager.MapUserToRoom(Context.ConnectionId, room);
-                await Groups.AddToGroupAsync(Context.ConnectionId, joinCode);
-                await Clients.Client(room.HostConnectionId).SendAsync("UserJoined", Context.ConnectionId, name);
+                if (!room.IsFull())
+                {
+                    room.AddMember(Context.ConnectionId, name);
+                    RoomManager.MapUserToRoom(Context.ConnectionId, room);
+                    await Groups.AddToGroupAsync(Context.ConnectionId, joinCode);
+                    await Clients.Client(room.HostConnectionId).SendAsync("UserJoined", Context.ConnectionId, name);
+                }
+                else await Clients.Caller.SendAsync("RoomError", "Room is full.");
             }
             else
             {
