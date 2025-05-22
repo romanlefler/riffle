@@ -71,8 +71,11 @@ namespace Riffle.Hubs
             {
                 if (room.HostConnectionId != Context.ConnectionId) return;
 
-                room.StartGame();
-                await Clients.Group(room.JoinCode).SendAsync("GameStarted");
+                if (room.StartGame())
+                {
+                    await Clients.Group(room.JoinCode).SendAsync("GameStarted");
+                }
+                else await Clients.Caller.SendAsync("RoomError", "Failed to start game.");
             }
         }
 

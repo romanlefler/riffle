@@ -47,9 +47,10 @@ namespace Riffle.Models.Games
             return _members.Count >= MAX_PLAYER_COUNT;
         }
 
-        public override void StartGame()
+        public override bool StartGame()
         {
             _stage = Stage.ChooseWord;
+            return true;
         }
 
         private bool AllPlayersChose()

@@ -34,7 +34,7 @@ namespace Riffle.Models
 
         public abstract bool IsFull();
 
-        public abstract void StartGame();
+        public abstract bool StartGame();
 
         public virtual async Task StringMsg(string connId, IHubCallerClients clients, string msgName, string msgContent)
         {
