@@ -7,6 +7,7 @@ namespace Riffle.Models.Games
 {
     public class RoundaboutRoom : Room
     {
+        private const int MIN_PLAYER_COUNT = 2;
         private const int MAX_PLAYER_COUNT = 8;
 
 
@@ -49,6 +50,8 @@ namespace Riffle.Models.Games
 
         public override bool StartGame()
         {
+            if (_members.Count >= MIN_PLAYER_COUNT) return false;
+
             _stage = Stage.ChooseWord;
             return true;
         }
