@@ -1,39 +1,39 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <FrontendDir>$(ProjectDir)../RiffleFrontend/</FrontendDir>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="websrc\**" />
-    <Content Remove="websrc\**" />
-    <EmbeddedResource Remove="websrc\**" />
-    <None Remove="websrc\**" />
-  </ItemGroup>
+    <Target Name="RunViteBuild" BeforeTargets="Build">
+        <Message Text="Building frontend scripts into wwwroot." />
 
-  <ItemGroup>
-    <None Remove="frontend\roundaboutHost.ts" />
-    <None Remove="vite.config.ts" />
-  </ItemGroup>
+        <Exec Command="npm install" WorkingDirectory="$(FrontendDir)"
+            Condition="Exists('$(FrontendDir)package.json')" />
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.5" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="9.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="9.0.5" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.5" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
-  </ItemGroup>
+        <Exec Command="npx vite build" WorkingDirectory="$(FrontendDir)"
+            Condition="Exists('$(FrontendDir)package.json')" />
+    </Target>
 
-  <ItemGroup>
-    <TypeScriptCompile Include="frontend\roundaboutHost.ts" />
-    <TypeScriptCompile Include="vite.config.ts" />
-  </ItemGroup>
+    <Target Name="CleanViteBuild" AfterTargets="Clean">
+        <RemoveDir Directories="$(ProjectDir)wwwroot/dist" />
+    </Target>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore"
+            Version="9.0.5" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="9.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation"
+            Version="9.0.5" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.5" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
+    </ItemGroup>
 
 </Project>
