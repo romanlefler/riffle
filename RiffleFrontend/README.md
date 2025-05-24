@@ -2,7 +2,7 @@
 # Install Dependencies
 
 ```shell
-npm install typescript vite gsap @types/node
+npm install
 ```
 
 # Build to Backend's Static Files
