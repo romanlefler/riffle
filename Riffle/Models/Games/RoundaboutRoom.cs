@@ -140,7 +140,7 @@ namespace Riffle.Models.Games
                     {
                         string original = _members[_userUp].SecretWord ?? throw new InvalidOperationException();
                         await clients.Group(JoinCode).SendAsync("SuccessfulGuess", connId, original);
-                        if (NextUser())
+                        if (!NextUser())
                         {
                             // 7 second delay for client animations
                             await Task.Delay(7000);
