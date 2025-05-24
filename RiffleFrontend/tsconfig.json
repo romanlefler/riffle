@@ -9,6 +9,6 @@
         "sourceMap": true
     },
     "include": [
-        "frontend/**/*"
+        "src/**/*"
     ]
 }
