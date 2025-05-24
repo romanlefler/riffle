@@ -85,6 +85,7 @@ namespace Riffle.Models.Games
         private bool TryGuess(string guess)
         {
             string guessNorm = NormString.NormalizeString(guess);
+            _ = _secretWord ?? throw new InvalidOperationException("Secret word is null.");
             int tol = _secretWord.Length / 4;
             int dist = StringDistance.ComputeLevenshtein(guessNorm, _secretWord);
 
