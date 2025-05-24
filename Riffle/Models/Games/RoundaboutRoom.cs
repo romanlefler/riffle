@@ -15,11 +15,10 @@ namespace Riffle.Models.Games
 
         private Stage _stage;
 
-        
         // The index of the user that's word is being guessed.
         private int _userUp;
 
-        private string _secretWord;
+        private string? _secretWord;
 
         public RoundaboutRoom(string hostConnId) : base(hostConnId, GameType.Roundabout)
         {
@@ -92,6 +91,21 @@ namespace Riffle.Models.Games
             return dist <= tol;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns>True if the round is over.</returns>
+        private bool NextUser()
+        {
+            if (++_userUp >= _members.Count)
+            {
+                SetUserUp(0);
+                return true;
+            }
+            SetUserUp(_userUp);
+            return false;
+        }
+
         public override async Task StringMsg(string connId, IHubCallerClients clients, string msgName, string msgContent)
         {
             RoundaboutMember? m = _members.Find(k => k.ConnectionId == connId);
@@ -121,10 +135,22 @@ namespace Riffle.Models.Games
                     // User that's up cannot execute this
                     if (_members[_userUp] == m) return;
 
-                    if(TryGuess(msgContent))
+                    if (TryGuess(msgContent))
                     {
                         string original = _members[_userUp].SecretWord ?? throw new InvalidOperationException();
                         await clients.Group(JoinCode).SendAsync("SuccessfulGuess", connId, original);
+                        if (NextUser())
+                        {
+                            // 7 second delay for client animations
+                            await Task.Delay(7000);
+
+                            await clients.Group(JoinCode).SendAsync("GuessingStarted");
+                        }
+                        else
+                        {
+                            RankMembers.RankScore(_members, out string[] connIds, out long[] scores);
+                            await clients.Group(JoinCode).SendAsync("GameEnded", connIds, scores);
+                        }
                     }
                     // If it's wrong nothing happens
                     return;

@@ -47,6 +47,7 @@ These methods are standard for every room.
 |------------------|---------|-----------|-------------|
 | UserChoseWord    | Host    | User ID   |             |
 | ChoiceAccepted   | Member  | User ID   |             |
-| GuessingAccepted | Any     |           |             |
+| GuessingStarted  | Any     |           |             |
 | SuccessfulGuess  | Any     | User ID   | Secret Word |
+| GameEnded		   | Any     | User ID[] | Scores[]    |
 
