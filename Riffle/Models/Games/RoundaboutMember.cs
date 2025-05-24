@@ -1,6 +1,6 @@
 ﻿namespace Riffle.Models.Games
 {
-    public class RoundaboutMember : RoomMember
+    public class RoundaboutMember : RoomMember, IScoreMember
     {
 
         public long Score { get; set; }
