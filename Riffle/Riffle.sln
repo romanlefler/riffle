@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36109.1 d17.14
+VisualStudioVersion = 17.14.36109.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Riffle", "Riffle.csproj", "{9B22E851-E642-0E76-B24E-D8D2C873D045}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RiffleTest", "..\RiffleTest\RiffleTest.csproj", "{4928E781-A4AF-4457-A2C7-E1D5EAA47140}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{9B22E851-E642-0E76-B24E-D8D2C873D045}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9B22E851-E642-0E76-B24E-D8D2C873D045}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9B22E851-E642-0E76-B24E-D8D2C873D045}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4928E781-A4AF-4457-A2C7-E1D5EAA47140}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4928E781-A4AF-4457-A2C7-E1D5EAA47140}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4928E781-A4AF-4457-A2C7-E1D5EAA47140}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4928E781-A4AF-4457-A2C7-E1D5EAA47140}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

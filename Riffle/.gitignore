@@ -1,5 +1,10 @@
 ﻿
+*.user
+
 bin/
 obj/
+
+wwwroot/dist
+wwwroot/lib
 
 .vs/

@@ -7,8 +7,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="websrc\**" />
+    <Content Remove="websrc\**" />
+    <EmbeddedResource Remove="websrc\**" />
+    <None Remove="websrc\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="frontend\roundaboutHost.ts" />
+    <None Remove="vite.config.ts" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="9.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="9.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.0">
@@ -16,6 +29,11 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <TypeScriptCompile Include="frontend\roundaboutHost.ts" />
+    <TypeScriptCompile Include="vite.config.ts" />
   </ItemGroup>
 
 </Project>
