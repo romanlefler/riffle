@@ -16,6 +16,10 @@ The backend is found in `Riffle/` with unit tests in `RiffleTest/`.
 Frontend scripts are found in `RiffleFrontend/` and are
 automatically built when the backend is run.
 
+Be careful that CSHTML pages that use frontend scripts
+don't also include any other scripts or the minifier
+may conflict with them and create weird errors.
+
 ## SignalR Client/Server Interactions
 
 The frontend scripts and the backend use SignalR to interact
