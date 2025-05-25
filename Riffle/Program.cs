@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity.UI;
 using Riffle.Hubs;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.SignalR;
+using Riffle.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,8 @@ builder.Services.AddControllersWithViews();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddSingleton<AssetMapService>();
 
 #if DEBUG
 builder.Services.AddSignalR(options =>
