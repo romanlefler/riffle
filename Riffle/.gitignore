@@ -4,6 +4,7 @@
 bin/
 obj/
 
+Resources/viteMap.json
 wwwroot/dist
 wwwroot/lib
 
