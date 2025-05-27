@@ -1,0 +1,83 @@
+@import url("./anakPaud.css");
+
+:root {
+
+}
+
+body {
+    overflow: hidden;
+    margin: 0px;
+    width: 100vw;
+    height: 100vh;
+    user-select: none;
+    cursor: default;
+}
+
+main {
+    overflow: hidden;
+    margin: 0px;
+    width: 100vw;
+    height: 100vh;
+
+    font-size: 11vmin;
+    color: whitesmoke;
+
+    font-family: "Anak Paud", cursive;
+}
+
+@keyframes pulse-background {
+    0%, 100% {
+        transform: scale(1.0);
+    }
+    50% {
+        transform: scale(1.5);
+    }
+}
+
+.background {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    display: block;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-color: burlywood;
+    background-image: url("./imgs/ScrambledBrown-NickyPe.gif");
+    animation: pulse-background 4s infinite ease-in-out;
+}
+
+#player-count {
+    position: fixed;
+    right: 10px;
+    top: 2px;
+}
+
+#join-code {
+    font-size: 2em;
+    cursor: pointer;
+    position: fixed;
+    left: 5px;
+    top: 40%;
+}
+
+#play-button {
+    position: fixed;
+    right: 5%;
+    bottom: 20%;
+    rotate: -10deg;
+    cursor: pointer;
+    background-color: #00000050;
+    color: inherit;
+    font: inherit;
+    border: 1px solid black;
+    border-radius: 10px;
+}
+
+#play-button:disabled {
+    color: gray;
+    filter: blur(1px);
+}

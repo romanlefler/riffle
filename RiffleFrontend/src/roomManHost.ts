@@ -11,7 +11,7 @@ interface HandlerInfo {
 export class RoomManHost {
 
     #conn : HubConnection;
-    #joinCode : string | null;
+    #joinCode : string;
     #users : SignalRUser[];
     #gameType : GameType;
 
@@ -20,7 +20,7 @@ export class RoomManHost {
             .withUrl("/RoomHub")
             .configureLogging(LogLevel.Debug)
             .build();
-        this.#joinCode = null;
+        this.#joinCode = "";
         this.#users = [ ];
         this.#gameType = gameType;
     }
@@ -33,7 +33,7 @@ export class RoomManHost {
         return this.#users;
     }
 
-    get joinCode() : string | null {
+    get joinCode() : string {
         return this.#joinCode;
     }
 
@@ -66,7 +66,7 @@ export class RoomManHost {
     #addListener(name : string, handler : any) {
         const info = this.#handlers[name];
         if(!info) throw new Error("This event doesn't exist.");
-        const wrappedHandler = info.fn.bind(handler);
+        const wrappedHandler = info.fn.bind(this, handler);
         info.map.set(handler, wrappedHandler);
         this.#conn.on(name, wrappedHandler);
     }
