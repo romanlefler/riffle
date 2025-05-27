@@ -5,6 +5,7 @@ import { renameSync } from "fs";
 const outDir = "../Riffle/wwwroot/dist";
 
 export default defineConfig({
+    base: "/dist/",
     build: {
         outDir: resolve(__dirname, outDir),
         manifest: "viteMap.json",
