@@ -16,6 +16,8 @@ namespace Riffle.Utilities
         private readonly ILogger<AssetMapService> _logger;
 
         public string RoundaboutHostJs { get; private set; } = "";
+        private string _roundaboutHostCss = "";
+        public string RoundaboutHostCss { get => _roundaboutHostCss; }
 
         public AssetMapService(ILogger<AssetMapService> logger)
         {
@@ -45,14 +47,31 @@ namespace Riffle.Utilities
             DebugWatch();
         }
 
+        private static string GetMappedFile(JsonElement root, string name, ref string css)
+        {
+            JsonElement fileObj = root.GetProperty(name);
+            JsonElement valProp = fileObj.GetProperty("file");
+            string? nameVal = valProp.GetString();
+            _ = nameVal ?? throw new InvalidOperationException("file property not a string.");
+
+            if (fileObj.TryGetProperty("css", out JsonElement cssProp))
+            {
+                JsonElement firstItem = cssProp[0];
+                css = $"dist/{firstItem.GetString()}";
+            }
+            else css = "";
+
+            return $"dist/{nameVal}";
+        }
+
         private void DebugLoad()
         {
             using FileStream fs = File.Open(_fileFullPath, FileMode.Open);
             using JsonDocument doc = JsonDocument.Parse(fs);
             JsonElement root = doc.RootElement;
 
-            RoundaboutHostJs = "dist/" + root.GetProperty("src/roundaboutHost.ts")
-                .GetProperty("file").GetString();
+            RoundaboutHostJs = GetMappedFile(root, "src/roundaboutHost.ts",
+                ref _roundaboutHostCss);
 
         }
 

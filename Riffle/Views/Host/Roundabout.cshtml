@@ -1,11 +1,24 @@
 ﻿
 @{
+    Layout = "~/Views/Shared/_BlankLayout.cshtml";
     ViewData["Title"] = "Play Roundabout";
 }
 
-<h1>Roundabout</h1>
+@section Styles {
+    <link rel="stylesheet" href="~/@ViewData["StyleSrc"]" />
+}
 
-<h2 id="join-code"></h2>
+@section Scripts {
+    <script src="~/@ViewData["ScriptSrc"]"></script>
+}
+
+<div class="background"></div>
+
+<p>Roundabout</p>
+
+<div id="player-count"></div>
+
+<div id="join-code"></div>
 
 <p id="player-list"></p>
 
@@ -13,6 +26,4 @@
 
 <button id="play-button">Start Game</button>
 <p id="play-timer"></p>
-
-<script src="~/@ViewData["ScriptSrc"]"></script>
 

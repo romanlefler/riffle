@@ -25,6 +25,7 @@ namespace Riffle.Controllers
         public IActionResult Roundabout()
         {
             ViewData["ScriptSrc"] = _assetMapService.RoundaboutHostJs;
+            ViewData["StyleSrc"] = _assetMapService.RoundaboutHostCss;
             return View("Roundabout");
         }
 
