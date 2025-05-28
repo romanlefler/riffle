@@ -62,8 +62,8 @@ namespace Riffle.Controllers
             switch(room.Game)
             {
                 case GameType.Roundabout:
-                    ViewData["ScriptSrc"] = _assetMapService.RoundaboutHostJs;
-                    ViewData["StyleSrc"] = _assetMapService.RoundaboutHostCss;
+                    ViewData["ScriptSrc"] = _assetMapService.RoundaboutMemberJs;
+                    ViewData["StyleSrc"] = _assetMapService.RoundaboutMemberCss;
                     view = "Roundabout";
                     break;
                 default:
