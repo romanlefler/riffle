@@ -1,5 +1,6 @@
 ﻿
 @{
+    Layout = "~/Views/Shared/_BlankLayout.cshtml";
     ViewData["Title"] = "Roundabout";
 }
 
@@ -8,7 +9,7 @@
 }
 
 @section Scripts {
-    <script src="~/@ViewData["ScriptSrc"]"></script>
+    <script type="module" src="~/@ViewData["ScriptSrc"]"></script>
 }
 
 <div id="lobby-screen">
