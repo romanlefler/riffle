@@ -1,4 +1,13 @@
 
+@keyframes dialog-pop-out {
+    from {
+        transform: scale(0.0);
+    }
+    to {
+        transform: scale(1.0);
+    }
+}
+
 .dialog-back {
 
     position: fixed;
@@ -21,6 +30,7 @@
         border: 2px solid black;
         border-radius: 12px;
         font-size: 3vmin;
+        animation: dialog-pop-out 0.5s ease-out;
 
         .dialog-flex {
 
