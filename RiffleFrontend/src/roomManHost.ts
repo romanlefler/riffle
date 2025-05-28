@@ -103,6 +103,10 @@ export class RoomManHost {
         this.#removeListener("UserLeft", handler);
     }
 
+    addRoomErrorListener(callback : (err : string) => void) : void {
+        this.#conn.on("RoomError", callback);
+    }
+
     #handlers : Record<string, HandlerInfo> = {
         "UserJoined": {
             map: new Map(),

@@ -2,7 +2,7 @@
 import gsap from "gsap";
 import { GameType } from "./defines";
 import { RoomManHost } from "./roomManHost";
-import { sleep } from "./utils";
+import { fatalErrorDialog, sleep } from "./utils";
 import { showDialog } from "./dialog";
 
 const room: RoomManHost = new RoomManHost(GameType.Roundabout);
@@ -27,9 +27,9 @@ function showUsers() {
     elemStartBtn.disabled = count < 2;
 }
 
-function startClicked() {
+async function startClicked() {
     if(room.users.length < 2) return;
-    
+    await room.startGame();
 }
 
 async function main() {
@@ -46,14 +46,7 @@ async function main() {
 
     showUsers();
     gsap.from(elemPlCount, { y: "100vh", ease: "bounce.out", duration: 1.5 });
-
 }
 
-main().catch(async err => {
-    await showDialog({
-        title: "Error Occurred",
-        content: String(err ?? "An unknown error occurred."),
-        buttons: [ "Reload" ]
-    });
-    window.location.reload();
-});
+main().catch(fatalErrorDialog);
+room.addRoomErrorListener(fatalErrorDialog);
