@@ -19,6 +19,10 @@ namespace Riffle.Utilities
         private string _roundaboutHostCss = "";
         public string RoundaboutHostCss { get => _roundaboutHostCss; }
 
+        public string RoundaboutMemberJs { get; private set; } = "";
+        private string _roundaboutMemberCss = "";
+        public string RoundaboutMemberCss { get => _roundaboutMemberCss; }
+
         public AssetMapService(ILogger<AssetMapService> logger)
         {
             _logger = logger;
@@ -72,6 +76,9 @@ namespace Riffle.Utilities
 
             RoundaboutHostJs = GetMappedFile(root, "src/host/roundaboutHost.ts",
                 ref _roundaboutHostCss);
+
+            RoundaboutMemberJs = GetMappedFile(root, "src/member/roundaboutMember.ts",
+                ref _roundaboutMemberCss);
 
         }
 

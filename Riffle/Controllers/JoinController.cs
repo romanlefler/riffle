@@ -10,6 +10,13 @@ namespace Riffle.Controllers
 
     public class JoinController : Controller
     {
+        private readonly AssetMapService _assetMapService;
+
+        public JoinController(AssetMapService assetMapService)
+        {
+            _assetMapService = assetMapService;
+        }
+
         [HttpGet("/Join")]
         public IActionResult JoinGet(string? code)
         {
@@ -51,10 +58,17 @@ namespace Riffle.Controllers
             ViewData["joinCode"] = joinCode;
             ViewData["playerName"] = name;
 
-            string view = room.Game switch
+            string view;
+            switch(room.Game)
             {
-                GameType.Roundabout => "Roundabout",
-                _ => "Join"
+                case GameType.Roundabout:
+                    ViewData["ScriptSrc"] = _assetMapService.RoundaboutHostJs;
+                    ViewData["StyleSrc"] = _assetMapService.RoundaboutHostCss;
+                    view = "Roundabout";
+                    break;
+                default:
+                    view = "Join";
+                    break;
             };
 
             return View(view);

@@ -3,30 +3,33 @@
     ViewData["Title"] = "Roundabout";
 }
 
-<h1>Roundabout</h1>
+@section Styles {
+    <link rel="stylesheet" href="~/@ViewData["StyleSrc"]" />
+}
 
-<div id="lobbyScreen">
-	<p id="connectingText">Connecting...</p>
+@section Scripts {
+    <script src="~/@ViewData["ScriptSrc"]"></script>
+}
+
+<div id="lobby-screen">
+	<p id="lobby-msg">Connecting...</p>
 </div>
 
-<div id="choiceScreen" style="display:none;">
-	<p id="choiceMsg">Choose your secret word!</p>
+<div id="choice-screen">
+	<p id="choice-msg">Choose your secret word!</p>
 	<br />
-	<input type="text" id="choiceBox" />
-	<button id="choiceSubmit">Submit</button>
+	<input type="text" id="choice-input" />
+	<button id="choice-submit">Submit</button>
 </div>
 
-<div id="chosenScreen" style="display:none;">
-	<p id="chosenText"></p>
+<div id="chosen-screen">
+	<p id="chosen-msg"></p>
 </div>
 
-<div id="endScreen" style="display:none;">
-	<p id="endMsg"></p>
+<div id="end-screen">
+	<p id="end-msg"></p>
 </div>
 
-<div id="joinCodeData" data-code="@ViewData["joinCode"]"></div>
-<div id="playerNameData" data-name="@ViewData["playerName"]"></div>
-<script src="~/lib/signalr/dist/browser/signalr.js"></script>
-<script src="~/js/join/joinCommon.js"></script>
-<script src="~/js/join/roundabout.js"></script>
+<div id="join-code-data" data-code="@ViewData["joinCode"]"></div>
+<div id="player-name-data" data-name="@ViewData["playerName"]"></div>
 
