@@ -46,8 +46,6 @@ export class RoomManHost {
         return new Promise<void>((resolve, reject) => {
 
             this.#conn.on("RoomCreated", (joinCode : string) => {
-                console.log(joinCode);
-                console.log(typeof joinCode);
                 if(!joinCode || typeof joinCode !== "string") {
                     reject("Failed to receive join code.");
                 }
@@ -58,9 +56,19 @@ export class RoomManHost {
             });
 
             this.#conn.invoke("CreateRoom", this.#gameType);
-            console.log("invoked)");
         });
 
+    }
+
+    async startGame() : Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+
+            this.#conn.on("GameStarted", () => {
+                resolve();
+            });
+
+            this.#conn.invoke("StartGame");
+        });
     }
 
     #addListener(name : string, handler : any) {
