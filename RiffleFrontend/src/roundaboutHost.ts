@@ -3,6 +3,7 @@ import gsap from "gsap";
 import { GameType } from "./defines";
 import { RoomManHost } from "./roomManHost";
 import { sleep } from "./utils";
+import { showDialog } from "./dialog";
 
 const room: RoomManHost = new RoomManHost(GameType.Roundabout);
 
@@ -28,11 +29,11 @@ function showUsers() {
 
 function startClicked() {
     if(room.users.length < 2) return;
-
+    
 }
 
 async function main() {
-
+    
     await room.connect();
     await room.createRoom();
 
@@ -48,4 +49,11 @@ async function main() {
 
 }
 
-main();
+main().catch(async err => {
+    await showDialog({
+        title: "Error Occurred",
+        content: String(err ?? "An unknown error occurred."),
+        buttons: [ "Reload" ]
+    });
+    window.location.reload();
+});
