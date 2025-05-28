@@ -70,7 +70,7 @@ namespace Riffle.Utilities
             using JsonDocument doc = JsonDocument.Parse(fs);
             JsonElement root = doc.RootElement;
 
-            RoundaboutHostJs = GetMappedFile(root, "src/roundaboutHost.ts",
+            RoundaboutHostJs = GetMappedFile(root, "src/host/roundaboutHost.ts",
                 ref _roundaboutHostCss);
 
         }

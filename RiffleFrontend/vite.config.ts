@@ -13,7 +13,7 @@ export default defineConfig({
         emptyOutDir: true,
         rollupOptions: {
             input: {
-                roundaboutHost: resolve(__dirname, "src/roundaboutHost.ts")
+                roundaboutHost: resolve(__dirname, "src/host/roundaboutHost.ts")
             }
         }
     },

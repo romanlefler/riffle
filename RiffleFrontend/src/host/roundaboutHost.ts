@@ -1,9 +1,9 @@
 ﻿import "./styles/roundaboutHost.css";
 import gsap from "gsap";
-import { GameType } from "./defines";
+import { GameType } from "../defines";
 import { RoomManHost } from "./roomManHost";
-import { fatalErrorDialog, sleep } from "./utils";
-import { showDialog } from "./dialog";
+import { fatalErrorDialog, sleep } from "../utils";
+import { showDialog } from "../dialog";
 
 const room: RoomManHost = new RoomManHost(GameType.Roundabout);
 

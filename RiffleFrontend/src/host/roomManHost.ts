@@ -1,5 +1,5 @@
 import { HubConnection, HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
-import { GameType, SignalRUser } from "./defines";
+import { GameType, SignalRUser } from "../defines";
 
 export type SignalRUserHandler = (user : SignalRUser) => void;
 
