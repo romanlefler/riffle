@@ -1,4 +1,4 @@
-﻿import "./styles/roundaboutHost.css";
+﻿import "../styles/roundaboutHost.css";
 import gsap from "gsap";
 import { GameType } from "../defines";
 import { RoomManHost } from "./roomManHost";
