@@ -21,6 +21,14 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddSingleton<AssetMapService>();
 
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(45);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
 #if DEBUG
 builder.Services.AddSignalR(options =>
 {
@@ -37,6 +45,8 @@ builder.Services.AddResponseCompression(opts =>
 #endif
 
 var app = builder.Build();
+
+app.UseSession();
 
 #if !DEBUG
 app.UseResponseCompression();
