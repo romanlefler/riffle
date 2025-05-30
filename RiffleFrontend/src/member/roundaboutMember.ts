@@ -48,6 +48,39 @@ room.hubConn.on("ChoiceAccepted", () => {
     choiceSubmit.removeEventListener("click", submitChoice);
 });
 
+room.hubConn.on("GuessingStarted", () => {
+
+    choiceMsg.textContent = "Guess the Word";
+    choiceInput.value = "";
+    choiceSubmit.textContent = "Try";
+    choiceSubmit.addEventListener("click", submitGuess);
+    choiceSubmit.disabled = false;
+
+    chosenScreen.style.display = "none";
+    choiceScreen.style.display = "block";
+});
+
+function submitGuess() {
+
+    const phrase = choiceInput.value;
+    choiceInput.value = "";
+    if(!phrase.trim()) return;
+
+    room.hubConn.invoke("StringMsg", "GuessWord", phrase);
+}
+
+room.hubConn.on("SuccessfulGuess", () => {
+    choiceScreen.style.display = "none";
+    choiceSubmit.removeEventListener("click", submitGuess);
+});
+
+room.hubConn.on("GameEnded", (userIds : string[]) => {
+    const place = userIds.indexOf(room.hubConn.connectionId!) + 1;
+    const podium = Math.min(3, userIds.length - 1);
+    chosenMsg.textContent = place <= podium ? "Congratulations!" : "Tough luck";
+    chosenScreen.style.display = "block";
+});
+
 async function main() {
 
     lobbyScreen.style.display = "block";
