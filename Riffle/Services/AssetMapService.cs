@@ -6,7 +6,7 @@ using StrDict = System.Collections.Generic.Dictionary<string, string>;
 using DblStrDict = System.Collections.Generic.Dictionary<string,
     System.Collections.Generic.Dictionary<string, string>>;
 
-namespace Riffle.Utilities
+namespace Riffle.Services
 {
     public class AssetMapService
     {

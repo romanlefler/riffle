@@ -1,7 +1,7 @@
 ﻿// Copyright 2025 Roman Lefler
 
 using Microsoft.AspNetCore.Mvc;
-using Riffle.Utilities;
+using Riffle.Services;
 
 namespace Riffle.Controllers
 {

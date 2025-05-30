@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Identity.UI;
 using Riffle.Hubs;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.SignalR;
-using Riffle.Utilities;
+using Riffle.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
