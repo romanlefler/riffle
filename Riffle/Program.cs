@@ -20,6 +20,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddSingleton<AssetMapService>();
+builder.Services.AddSingleton<BadWordService>();
 
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>

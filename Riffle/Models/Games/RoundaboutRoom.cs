@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.SignalR;
+using Riffle.Services;
 using Riffle.Utilities;
 using System.Text.RegularExpressions;
 
@@ -20,7 +21,8 @@ namespace Riffle.Models.Games
 
         private string? _secretWord;
 
-        public RoundaboutRoom(string hostConnId) : base(hostConnId, GameType.Roundabout)
+        public RoundaboutRoom(BadWordService badWordService, string hostConnId) :
+            base(badWordService, hostConnId, GameType.Roundabout)
         {
             _stage = Stage.Lobby;
             _members = new(8);

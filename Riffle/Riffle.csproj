@@ -26,6 +26,12 @@
     </ItemGroup>
 
     <ItemGroup>
+      <EmbeddedResource Include="Resources\badWords.txt.base64" />
+      <EmbeddedResource Include="Resources\badWords6Chars.txt.base64" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AhoCorasick" Version="2.0.279" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.5" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="9.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="9.0.5" />

@@ -1,6 +1,7 @@
 ﻿// Copyright 2025 Roman Lefler
 
 using Microsoft.AspNetCore.SignalR;
+using Riffle.Services;
 using Riffle.Utilities;
 using System.Runtime.CompilerServices;
 
@@ -8,17 +9,19 @@ namespace Riffle.Models
 {
     public abstract class Room
     {
+        private readonly BadWordService _badWordService;
+
         public string JoinCode { get; }
 
         public string HostConnectionId { get; }
 
         public GameType Game { get; }
 
-        public Room(string hostConnectionId, GameType game)
+        public Room(BadWordService badWordService, string hostConnectionId, GameType game)
         {
             ArgumentNullException.ThrowIfNullOrWhiteSpace(hostConnectionId, nameof(hostConnectionId));
 
-            string? code = Utilities.JoinCode.Create();
+            string? code = Utilities.JoinCode.Create(badWordService);
             if (code == null) throw new TooManyRoomsException();
             JoinCode = code;
 

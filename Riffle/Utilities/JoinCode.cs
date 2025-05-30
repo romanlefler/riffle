@@ -24,16 +24,17 @@ namespace Riffle.Utilities
             return new string(result);
         }
 
-        public static string? Create()
+        public static string? Create(BadWordService? badWordService)
         {
             string code;
             int tries = 0;
-            do
-            {
-                if (++tries > 500) return null;
-                code = GenerateCode();
-            }
-            while(RoomManager.Rooms.ContainsKey(code));
+
+        TryAgain:
+            if (++tries > 500) return null;
+            code = GenerateCode();
+
+            if (RoomManager.Rooms.ContainsKey(code)) goto TryAgain;
+            if (badWordService != null && badWordService.ContainsBad(code)) goto TryAgain;
 
             return code;
         }
