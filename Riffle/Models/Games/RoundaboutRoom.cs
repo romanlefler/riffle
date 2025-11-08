@@ -21,6 +21,8 @@ namespace Riffle.Models.Games
 
         private string? _secretWord;
 
+        private RoundaboutMember MemUp { get => _members[_userUp]; }
+
         public RoundaboutRoom(BadWordService badWordService, string hostConnId) :
             base(badWordService, hostConnId, GameType.Roundabout)
         {
@@ -72,12 +74,10 @@ namespace Riffle.Models.Games
             _stage = Stage.GuessWord;
         }
 
-
         private void SetUserUp(int userIndex)
         {
             _userUp = userIndex;
-            RoundaboutMember m = _members[_userUp];
-            string secret = m.SecretWord ?? throw new InvalidOperationException("Secret word was null.");
+            string secret = MemUp.SecretWord ?? throw new InvalidOperationException("Secret word was null.");
 
             // This both makes all whitespace uniform (all spaces)
             // and makes gets rid of any back-to-back spaces
@@ -128,7 +128,7 @@ namespace Riffle.Models.Games
                     if (AllPlayersChose())
                     {
                         StartGuessing();
-                        await clients.Group(JoinCode).SendAsync("GuessingStarted");
+                        await clients.Group(JoinCode).SendAsync("GuessingStarted", MemUp.ConnectionId);
                     }
                     return;
                 case "GuessWord":
@@ -136,18 +136,18 @@ namespace Riffle.Models.Games
                     // Host cannot execute this
                     if (HostConnectionId == connId) return;
                     // User that's up cannot execute this
-                    if (_members[_userUp] == m) return;
+                    if (MemUp == m) return;
 
                     if (TryGuess(msgContent))
                     {
-                        string original = _members[_userUp].SecretWord ?? throw new InvalidOperationException();
+                        string original = MemUp.SecretWord ?? throw new InvalidOperationException();
                         await clients.Group(JoinCode).SendAsync("SuccessfulGuess", connId, original);
                         if (!NextUser())
                         {
                             // 7 second delay for client animations
                             await Task.Delay(7000);
 
-                            await clients.Group(JoinCode).SendAsync("GuessingStarted");
+                            await clients.Group(JoinCode).SendAsync("GuessingStarted", MemUp.ConnectionId);
                         }
                         else
                         {
