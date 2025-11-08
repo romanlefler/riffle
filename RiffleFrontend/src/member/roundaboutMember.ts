@@ -17,6 +17,9 @@ const choiceSubmit = document.getElementById("choice-submit") as HTMLButtonEleme
 const chosenScreen = document.getElementById("chosen-screen") as HTMLDivElement;
 const chosenMsg = document.getElementById("chosen-msg") as HTMLParagraphElement;
 
+const sentScreen = document.getElementById("sent-screen") as HTMLDivElement;
+const sentMsg = document.getElementById("sent-msg") as HTMLParagraphElement;
+
 room.hubConn.on("GameStarted", () => {
     
     choiceMsg.textContent = "Choose your secret word!";
@@ -49,28 +52,25 @@ room.hubConn.on("ChoiceAccepted", () => {
 });
 
 room.hubConn.on("GuessingStarted", (connId : string) => {
+    choiceMsg.textContent = "Guess the Word";
+    choiceInput.value = "";
+    choiceSubmit.textContent = "Try";
+    choiceSubmit.addEventListener("click", submitGuess);
+    choiceSubmit.disabled = false;
 
-    if(room.hubConn.connectionId === connId) {
-        // Getting guessed
-        // TODO: Being guessed screen
-        choiceMsg.textContent = "You're Being Guessed";
-        choiceInput.value = "";
-        choiceSubmit.textContent = "Continue";
-        choiceSubmit.disabled = true;
+    chosenScreen.style.display = "none";
+    sentScreen.style.display = "none";
+    choiceScreen.style.display = "block";
+});
 
-        chosenScreen.style.display = "none";
-        choiceScreen.style.display = "block";
-    } else {
-        // Guess someone else's
-        choiceMsg.textContent = "Guess the Word";
-        choiceInput.value = "";
-        choiceSubmit.textContent = "Try";
-        choiceSubmit.addEventListener("click", submitGuess);
-        choiceSubmit.disabled = false;
+room.hubConn.on("SentenceOptions", (base : string, options : string[]) => {
+    const msg = base.replaceAll(/\{(\d+)\}/g, "___");
+    sentMsg.textContent = msg;
+    // TODO: Word options
 
-        chosenScreen.style.display = "none";
-        choiceScreen.style.display = "block";
-    }
+    chosenScreen.style.display = "none";
+    choiceScreen.style.display = "none";
+    sentScreen.style.display = "block";
 });
 
 function submitGuess() {
