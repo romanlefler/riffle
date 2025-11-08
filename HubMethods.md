@@ -40,6 +40,7 @@ These methods are standard for every room.
 |--------------|-------------|-----------|
 | ChooseWord   | Member      | Word      |
 | GuessWord    | Member      | Word      |
+| SelSentence  | Member      | Indices[] |
 
 ### Client Methods
 
@@ -50,4 +51,5 @@ These methods are standard for every room.
 | GuessingStarted  | Any     | User ID   |             |
 | SuccessfulGuess  | Any     | User ID   | Secret Word |
 | GameEnded		   | Any     | User ID[] | Scores[]    |
-
+| SentenceSelected | Any     | Sentence  |             |
+| SentenceOptions  | Member  | Base      | Options[][] |

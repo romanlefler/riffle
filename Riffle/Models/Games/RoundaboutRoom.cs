@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using Riffle.Services;
 using Riffle.Utilities;
-using System.Text.RegularExpressions;
 
 namespace Riffle.Models.Games
 {
@@ -19,6 +17,12 @@ namespace Riffle.Models.Games
         // The index of the user that's word is being guessed.
         private int _userUp;
 
+        private readonly List<string> _sentences;
+
+        private string? _wipSentBase;
+
+        private string[][]? _wipSentOptions;
+
         private string? _secretWord;
 
         private RoundaboutMember MemUp { get => _members[_userUp]; }
@@ -28,6 +32,7 @@ namespace Riffle.Models.Games
         {
             _stage = Stage.Lobby;
             _members = new(8);
+            _sentences = new(16);
         }
 
         public override void AddMember(string connectionId, string name)
@@ -82,6 +87,15 @@ namespace Riffle.Models.Games
             // This both makes all whitespace uniform (all spaces)
             // and makes gets rid of any back-to-back spaces
             _secretWord = NormString.NormalizeString(secret);
+
+            _sentences.Clear();
+            GenSentenceInfo();
+        }
+
+        private void GenSentenceInfo()
+        {
+            _wipSentBase = "It's a {0} {1}.";
+            _wipSentOptions = [ [ "colorful", "dusty" ], [ "experience", "spot" ] ];
         }
 
         private bool TryGuess(string guess)
@@ -109,6 +123,12 @@ namespace Riffle.Models.Games
             return false;
         }
 
+        private void NewSentence(string sentence)
+        {
+            _sentences.Add(sentence);
+            GenSentenceInfo();
+        }
+
         public override async Task StringMsg(string connId, IHubCallerClients clients, string msgName, string msgContent)
         {
             RoundaboutMember? m = _members.Find(k => k.ConnectionId == connId);
@@ -128,37 +148,68 @@ namespace Riffle.Models.Games
                     if (AllPlayersChose())
                     {
                         StartGuessing();
-                        await clients.Group(JoinCode).SendAsync("GuessingStarted", MemUp.ConnectionId);
+                        await Task.WhenAll(
+                            clients.GroupExcept(JoinCode, [ MemUp.ConnectionId ]).SendAsync("GuessingStarted"),
+                            clients.Client(MemUp.ConnectionId).SendAsync("SentenceOptions", _wipSentBase, _wipSentOptions)
+                        );
                     }
+                    return;
+                case "SelSentence":
+                    if (m is null || _stage != Stage.ChooseWord) return;
+                    if (_wipSentOptions is null || _wipSentBase is null) return;
+                    // Only user who's up can use this
+                    if (m != MemUp) return;
+                    int[]? indices = JsonUtil.TryDeserialize<int[]>(msgContent);
+                    if (indices is null || _wipSentOptions.Length != indices.Length) return;
+                    string[] choices = new string[indices.Length];
+                    for(int i = 0; i < indices.Length; i++)
+                    {
+                        int d = indices[i];
+                        string[] opts = _wipSentOptions[i];
+                        if (d is < 0 || d >= opts.Length) return;
+                        choices[i] = opts[d];
+                    }
+                    string sentence;
+                    try
+                    {
+                        sentence = string.Format(_wipSentBase, choices);
+                    }
+                    catch(FormatException)
+                    {
+                        sentence = "An error occurred.";
+                    }
+                    NewSentence(sentence);
+                    await clients.Group(JoinCode).SendAsync("SentenceSelected", sentence);
+                    await clients.Client(MemUp.ConnectionId).SendAsync("SentenceOptions", _wipSentBase, _wipSentOptions);
                     return;
                 case "GuessWord":
-                    if (m is null || _stage != Stage.GuessWord) return;
-                    // Host cannot execute this
-                    if (HostConnectionId == connId) return;
-                    // User that's up cannot execute this
-                    if (MemUp == m) return;
+                            if (m is null || _stage != Stage.GuessWord) return;
+                            // Host cannot execute this
+                            if (HostConnectionId == connId) return;
+                            // User that's up cannot execute this
+                            if (MemUp == m) return;
 
-                    if (TryGuess(msgContent))
-                    {
-                        string original = MemUp.SecretWord ?? throw new InvalidOperationException();
-                        await clients.Group(JoinCode).SendAsync("SuccessfulGuess", connId, original);
-                        if (!NextUser())
-                        {
-                            // 7 second delay for client animations
-                            await Task.Delay(7000);
+                            if (TryGuess(msgContent))
+                            {
+                                string original = MemUp.SecretWord ?? throw new InvalidOperationException();
+                                await clients.Group(JoinCode).SendAsync("SuccessfulGuess", connId, original);
+                                if (!NextUser())
+                                {
+                                    // 7 second delay for client animations
+                                    await Task.Delay(7000);
 
-                            await clients.Group(JoinCode).SendAsync("GuessingStarted", MemUp.ConnectionId);
-                        }
-                        else
-                        {
-                            RankMembers.RankScore(_members, out string[] connIds, out long[] scores);
-                            await clients.Group(JoinCode).SendAsync("GameEnded", connIds, scores);
+                                    await clients.Group(JoinCode).SendAsync("GuessingStarted", MemUp.ConnectionId);
+                                }
+                                else
+                                {
+                                    RankMembers.RankScore(_members, out string[] connIds, out long[] scores);
+                                    await clients.Group(JoinCode).SendAsync("GameEnded", connIds, scores);
+                                }
+                            }
+                            // If it's wrong nothing happens
+                            return;
                         }
                     }
-                    // If it's wrong nothing happens
-                    return;
-            }
-        }
 
         private enum Stage
         {
