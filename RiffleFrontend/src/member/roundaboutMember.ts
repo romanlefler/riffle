@@ -48,16 +48,29 @@ room.hubConn.on("ChoiceAccepted", () => {
     choiceSubmit.removeEventListener("click", submitChoice);
 });
 
-room.hubConn.on("GuessingStarted", () => {
+room.hubConn.on("GuessingStarted", (connId : string) => {
 
-    choiceMsg.textContent = "Guess the Word";
-    choiceInput.value = "";
-    choiceSubmit.textContent = "Try";
-    choiceSubmit.addEventListener("click", submitGuess);
-    choiceSubmit.disabled = false;
+    if(room.hubConn.connectionId === connId) {
+        // Getting guessed
+        // TODO: Being guessed screen
+        choiceMsg.textContent = "You're Being Guessed";
+        choiceInput.value = "";
+        choiceSubmit.textContent = "Continue";
+        choiceSubmit.disabled = true;
 
-    chosenScreen.style.display = "none";
-    choiceScreen.style.display = "block";
+        chosenScreen.style.display = "none";
+        choiceScreen.style.display = "block";
+    } else {
+        // Guess someone else's
+        choiceMsg.textContent = "Guess the Word";
+        choiceInput.value = "";
+        choiceSubmit.textContent = "Try";
+        choiceSubmit.addEventListener("click", submitGuess);
+        choiceSubmit.disabled = false;
+
+        chosenScreen.style.display = "none";
+        choiceScreen.style.display = "block";
+    }
 });
 
 function submitGuess() {
