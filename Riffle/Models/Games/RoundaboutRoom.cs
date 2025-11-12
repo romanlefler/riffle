@@ -155,7 +155,7 @@ namespace Riffle.Models.Games
                     }
                     return;
                 case "SelSentence":
-                    if (m is null || _stage != Stage.ChooseWord) return;
+                    if (m is null || _stage != Stage.GuessWord) return;
                     if (_wipSentOptions is null || _wipSentBase is null) return;
                     // Only user who's up can use this
                     if (m != MemUp) return;
