@@ -25,6 +25,8 @@ namespace Riffle.Models.Games
 
         private string? _secretWord;
 
+        private CancellationTokenSource? _sentenceWait;
+
         private RoundaboutMember MemUp { get => _members[_userUp]; }
 
         public RoundaboutRoom(BadWordService badWordService, string hostConnId) :
@@ -155,12 +157,20 @@ namespace Riffle.Models.Games
                     }
                     return;
                 case "SelSentence":
+                    // Must be in guessing stage
                     if (m is null || _stage != Stage.GuessWord) return;
+                    // Basic NULL checks
                     if (_wipSentOptions is null || _wipSentBase is null) return;
                     // Only user who's up can use this
                     if (m != MemUp) return;
+
                     int[]? indices = JsonUtil.TryDeserialize<int[]>(msgContent);
                     if (indices is null || _wipSentOptions.Length != indices.Length) return;
+
+                    // Someone's trying to send before the wait is up
+                    if (_sentenceWait != null) return;
+                    _sentenceWait = new CancellationTokenSource();
+
                     string[] choices = new string[indices.Length];
                     for(int i = 0; i < indices.Length; i++)
                     {
@@ -176,11 +186,19 @@ namespace Riffle.Models.Games
                     }
                     catch(FormatException)
                     {
+                        _sentenceWait.Dispose();
+                        _sentenceWait = null;
                         sentence = "An error occurred.";
+                        return;
                     }
                     NewSentence(sentence);
                     await clients.Group(JoinCode).SendAsync("SentenceSelected", sentence);
-                    await clients.Client(MemUp.ConnectionId).SendAsync("SentenceOptions", _wipSentBase, _wipSentOptions);
+
+                    // Player has to wait 4 seconds before submitting another sentence
+                    bool succ = await AsyncUtil.TaskDelay(4000, _sentenceWait.Token);
+                    _sentenceWait.Dispose();
+                    _sentenceWait = null;
+                    if(succ) await clients.Client(MemUp.ConnectionId).SendAsync("SentenceOptions", _wipSentBase, _wipSentOptions);
                     return;
                 case "GuessWord":
                             if (m is null || _stage != Stage.GuessWord) return;
@@ -195,10 +213,15 @@ namespace Riffle.Models.Games
                                 await clients.Group(JoinCode).SendAsync("SuccessfulGuess", connId, original);
                                 if (!NextUser())
                                 {
+                                    // Cancel the sentence gen process (it will dispose and take care of it)
+                                    _sentenceWait?.Cancel();
                                     // 7 second delay for client animations
                                     await Task.Delay(7000);
 
-                                    await clients.Group(JoinCode).SendAsync("GuessingStarted", MemUp.ConnectionId);
+                                    await Task.WhenAll(
+                                        clients.GroupExcept(JoinCode, [ MemUp.ConnectionId ]).SendAsync("GuessingStarted"),
+                                        clients.Client(MemUp.ConnectionId).SendAsync("SentenceOptions", _wipSentBase, _wipSentOptions)
+                                    );
                                 }
                                 else
                                 {
