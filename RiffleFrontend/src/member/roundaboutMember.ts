@@ -2,6 +2,7 @@ import "../styles/member.css";
 import { extractJoinData } from "./extractJoinData";
 import { RoomManMember } from "./roomManMember";
 import { fatalErrorDialog } from "../utils";
+import { showDialog } from "../dialog";
 
 const { plName, joinCode } = extractJoinData();
 const room = new RoomManMember(joinCode, plName);
@@ -19,6 +20,8 @@ const chosenMsg = document.getElementById("chosen-msg") as HTMLParagraphElement;
 
 const sentScreen = document.getElementById("sent-screen") as HTMLDivElement;
 const sentMsg = document.getElementById("sent-msg") as HTMLParagraphElement;
+const sentCol = document.getElementById("sent-columns") as HTMLDivElement;
+const sentSubmit = document.getElementById("sent-submit") as HTMLButtonElement;
 
 room.hubConn.on("GameStarted", () => {
     
@@ -42,6 +45,48 @@ function submitChoice() {
     room.hubConn.invoke("StringMsg", "ChooseWord", phrase).catch(fatalErrorDialog);
 }
 
+function radioClicked(this: HTMLButtonElement) {
+    const parent = this.parentElement;
+    for(const n of parent!.querySelectorAll("button.radio-sel")) n.classList.remove("radio-sel");
+    this.classList.add("radio-sel");
+}
+
+function showSentenceOptions(options: string[][]) {
+    const cols : HTMLDivElement[] = [ ];
+    for(const opt of options) {
+        const c = document.createElement("div");
+        c.classList.add("col", "radio");
+        for(let i = 0; i < opt.length; i++) {
+            const btn = document.createElement("button");
+            btn.textContent = opt[i];
+            btn.dataset.index = i.toString();
+            btn.addEventListener("click", radioClicked);
+            c.appendChild(btn);
+        }
+        cols.push(c);
+    }
+    sentCol.replaceChildren(...cols);
+
+    const submitSentence = function(this: HTMLButtonElement) {
+        const indices = [ ];
+        for(const r of cols) {
+            const selected = r.querySelectorAll("button.radio-sel");
+            if(selected.length === 0) {
+                showDialog({ title: "Pick Options", content: "Response blank." });
+                return;
+            } else if(selected.length > 1) throw new Error("Multiple selected!?!");
+            const s = selected[0] as HTMLButtonElement;
+            const idxStr = s.dataset.index;
+            if(!idxStr) throw new Error("No index?!?");
+            indices.push(parseInt(idxStr));
+        }
+        this.removeEventListener("click", submitSentence);
+        room.hubConn.invoke("StringMsg", "SelSentence", JSON.stringify(indices));
+        sentScreen.style.display = "none";
+    }
+    sentSubmit.addEventListener("click", submitSentence);
+}
+
 room.hubConn.on("ChoiceAccepted", () => {
     chosenMsg.textContent = "Good choice!";
 
@@ -63,10 +108,10 @@ room.hubConn.on("GuessingStarted", (connId : string) => {
     choiceScreen.style.display = "block";
 });
 
-room.hubConn.on("SentenceOptions", (base : string, options : string[]) => {
+room.hubConn.on("SentenceOptions", (base : string, options : string[][]) => {
     const msg = base.replaceAll(/\{(\d+)\}/g, "___");
     sentMsg.textContent = msg;
-    // TODO: Word options
+    showSentenceOptions(options);
 
     chosenScreen.style.display = "none";
     choiceScreen.style.display = "none";

@@ -64,3 +64,20 @@ input {
 button {
     cursor: pointer;
 }
+
+button.radio-sel {
+    background-color: #0000FF30;
+}
+
+.columns {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
