@@ -11,6 +11,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@microsoft/signalr": "^9.0.6",
     "gsap": "^3.13.0",
     "typescript": "^5.8.3",
     "vite": "^6.3.5"
