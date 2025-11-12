@@ -51,9 +51,10 @@ export async function showDialog(options : DialogOptions) : Promise<number> {
             });
             buttonsRow.appendChild(btn);
         }
+
+        document.querySelector("body main")!.appendChild(back);
+        btn!.focus();
     });
 
-    document.querySelector("body main")!.appendChild(back);
-    btn!.focus();
     return promise;
 }
