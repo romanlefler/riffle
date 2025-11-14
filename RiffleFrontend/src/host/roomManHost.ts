@@ -71,6 +71,10 @@ export class RoomManHost {
         });
     }
 
+    getUserById(userId : string) : SignalRUser | undefined {
+        return this.users.find(u => u.id === userId);
+    }
+
     #addListener(name : string, handler : any) {
         const info = this.#handlers[name];
         if(!info) throw new Error("This event doesn't exist.");

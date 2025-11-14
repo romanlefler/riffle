@@ -42,6 +42,11 @@ room.hubConn.on("SentenceSelected", (sentence : string) => {
     elemReceivedSentence.textContent = sentence;
 });
 
+room.hubConn.on("SuccessfulGuess", (userId : string, word : string) => {
+    const name = room.getUserById(userId)!.name;
+    elemReceivedSentence.textContent = `${name} got it with "${word}"`;
+});
+
 async function main() {
     elemStartScreen.style.display = "block";
     await room.connect();
