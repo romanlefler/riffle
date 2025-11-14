@@ -80,6 +80,24 @@ function radioClicked(this: HTMLButtonElement) {
     this.classList.add("radio-sel");
 }
 
+function submitSentence(this: HTMLButtonElement) {
+    const indices = [];
+    for (const r of sentCol.getElementsByClassName("col")) {
+        const selected = r.querySelectorAll("button.radio-sel");
+        if (selected.length === 0) {
+            showDialog({ title: "Pick Options", content: "Response blank." });
+            return;
+        } else if (selected.length > 1) throw new Error("Multiple selected!?!");
+        const s = selected[0] as HTMLButtonElement;
+        const idxStr = s.dataset.index;
+        if (!idxStr) throw new Error("No index?!?");
+        indices.push(parseInt(idxStr));
+    }
+    this.removeEventListener("click", submitSentence);
+    room.hubConn.invoke("StringMsg", "SelSentence", JSON.stringify(indices));
+    sentScreen.style.display = "none";
+}
+
 function showSentenceOptions(options: string[][]) {
     const cols : HTMLDivElement[] = [ ];
     for(const opt of options) {
@@ -95,24 +113,6 @@ function showSentenceOptions(options: string[][]) {
         cols.push(c);
     }
     sentCol.replaceChildren(...cols);
-
-    const submitSentence = function(this: HTMLButtonElement) {
-        const indices = [ ];
-        for(const r of cols) {
-            const selected = r.querySelectorAll("button.radio-sel");
-            if(selected.length === 0) {
-                showDialog({ title: "Pick Options", content: "Response blank." });
-                return;
-            } else if(selected.length > 1) throw new Error("Multiple selected!?!");
-            const s = selected[0] as HTMLButtonElement;
-            const idxStr = s.dataset.index;
-            if(!idxStr) throw new Error("No index?!?");
-            indices.push(parseInt(idxStr));
-        }
-        this.removeEventListener("click", submitSentence);
-        room.hubConn.invoke("StringMsg", "SelSentence", JSON.stringify(indices));
-        sentScreen.style.display = "none";
-    }
     sentSubmit.addEventListener("click", submitSentence);
 
     requestAnimationFrame(() => verifyColSize());
@@ -159,7 +159,9 @@ function submitGuess() {
 }
 
 room.hubConn.on("SuccessfulGuess", () => {
+    sentScreen.style.display = "none";
     choiceScreen.style.display = "none";
+    sentScreen.removeEventListener("click", submitSentence);
     choiceSubmit.removeEventListener("click", submitGuess);
 });
 
