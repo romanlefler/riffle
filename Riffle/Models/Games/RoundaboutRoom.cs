@@ -30,6 +30,8 @@ namespace Riffle.Models.Games
 
         private CancellationTokenSource? _sentenceWait;
 
+        private readonly List<string> _usedWords = [];
+
         private RoundaboutMember MemUp { get => _members[_userUp]; }
 
         public RoundaboutRoom(BadWordService badWordService, OllamaService ollamaClient, string hostConnId) :
@@ -94,6 +96,7 @@ namespace Riffle.Models.Games
             _secretWord = NormString.NormalizeString(secret);
 
             _sentences.Clear();
+            _usedWords.Clear();
             await GenSentenceInfo();
         }
 
@@ -114,14 +117,16 @@ namespace Riffle.Models.Games
             string optPrompt =
                 $"Output valid JSON containing an array of ${blanks} items where the items are arrays of 4 random nouns or adjectives.\n" +
                 $"Make some of them kinda related to <phrase>{MemUp.SecretWord}</phrase> but most of them not.\n" +
-                "No sentences, no extra text, just the raw JSON data.\n";
+                "No sentences, no extra text, just the raw JSON data.\nDO NOT USE ANY OF THESE WORDS: " +
+                string.Join(", ", _usedWords);
             var optMsg = OllamaService.ChatMessage.User(optPrompt);
-            string resp = await _ollamaClient.ChatAsync([sysMsg, baseMsg, outMsg, optMsg], 0.5);
+            string resp = await _ollamaClient.ChatAsync([sysMsg, outMsg, optMsg], 0.5);
             string[][]? cols = JsonUtil.TryDeserialize<string[][]>(resp);
             if (cols is null || cols.Length != blanks) throw new Exception("AI messed up columns. Msg: " + resp);
             
             for(int i = 0; i < blanks; i++)
             {
+                _usedWords.AddRange(cols[i]);
                 if (cols[i].Length != 4) throw new Exception("AI messed up 4 words. Msg: " + resp);
             }
             _wipSentOptions = cols;
