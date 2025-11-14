@@ -191,6 +191,8 @@ namespace Riffle.Models.Games
                     // Only user who's up can use this
                     if (m != MemUp) return;
 
+                    DateTime started = DateTime.Now;
+
                     int[]? indices = JsonUtil.TryDeserialize<int[]>(msgContent);
                     if (indices is null || _wipSentOptions.Length != indices.Length) return;
 
@@ -218,11 +220,12 @@ namespace Riffle.Models.Games
                         sentence = "An error occurred.";
                         return;
                     }
-                    await NewSentence(sentence);
                     await clients.Group(JoinCode).SendAsync("SentenceSelected", sentence);
+                    await NewSentence(sentence);
 
                     // Player has to wait 4 seconds before submitting another sentence
-                    bool succ = await AsyncUtil.TaskDelay(4000, _sentenceWait.Token);
+                    double deltaMs = (DateTime.Now - started).Milliseconds;
+                    bool succ = await AsyncUtil.TaskDelay(4000 - (int)deltaMs, _sentenceWait.Token);
                     _sentenceWait.Dispose();
                     _sentenceWait = null;
                     if(succ) await clients.Client(MemUp.ConnectionId).SendAsync("SentenceOptions", _wipSentBase, _wipSentOptions);
