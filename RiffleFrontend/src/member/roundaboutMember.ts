@@ -182,5 +182,12 @@ async function main() {
 
 window.addEventListener("resize", () => verifyColSize());
 
-main().catch(fatalErrorDialog);
+function enterSubmit(input: HTMLInputElement, submit: HTMLButtonElement) {
+    input.addEventListener("keypress", e => {
+        if(e.code === "Enter") submit.click();
+    });
+}
+enterSubmit(choiceInput, choiceSubmit);
+
 room.addRoomErrorListener(fatalErrorDialog);
+main().catch(fatalErrorDialog);
