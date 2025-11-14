@@ -30,7 +30,7 @@ namespace Riffle.Models.Games
 
         private CancellationTokenSource? _sentenceWait;
 
-        private readonly List<string> _usedWords = [];
+        private readonly BoundedQueue<string> _usedWords = new(50);
 
         private RoundaboutMember MemUp { get => _members[_userUp]; }
 
@@ -126,7 +126,7 @@ namespace Riffle.Models.Games
             
             for(int i = 0; i < blanks; i++)
             {
-                _usedWords.AddRange(cols[i]);
+                _usedWords.CheckedEnqueueMany(cols[i]);
                 if (cols[i].Length != 4) throw new Exception("AI messed up 4 words. Msg: " + resp);
             }
             _wipSentOptions = cols;
@@ -189,52 +189,54 @@ namespace Riffle.Models.Games
                     }
                     return;
                 case "SelSentence":
-                    // Must be in guessing stage
-                    if (m is null || _stage != Stage.GuessWord) return;
-                    // Basic NULL checks
-                    if (_wipSentOptions is null || _wipSentBase is null) return;
-                    // Only user who's up can use this
-                    if (m != MemUp) return;
-
-                    DateTime started = DateTime.Now;
-
-                    int[]? indices = JsonUtil.TryDeserialize<int[]>(msgContent);
-                    if (indices is null || _wipSentOptions.Length != indices.Length) return;
-
-                    // Someone's trying to send before the wait is up
-                    if (_sentenceWait != null) return;
-                    _sentenceWait = new CancellationTokenSource();
-
-                    string[] choices = new string[indices.Length];
-                    for(int i = 0; i < indices.Length; i++)
                     {
-                        int d = indices[i];
-                        string[] opts = _wipSentOptions[i];
-                        if (d is < 0 || d >= opts.Length) return;
-                        choices[i] = opts[d];
-                    }
-                    string sentence;
-                    try
-                    {
-                        sentence = string.Format(_wipSentBase, choices);
-                    }
-                    catch(FormatException)
-                    {
+                        // Must be in guessing stage
+                        if (m is null || _stage != Stage.GuessWord) return;
+                        // Basic NULL checks
+                        if (_wipSentOptions is null || _wipSentBase is null) return;
+                        // Only user who's up can use this
+                        if (m != MemUp) return;
+
+                        DateTime started = DateTime.Now;
+
+                        int[]? indices = JsonUtil.TryDeserialize<int[]>(msgContent);
+                        if (indices is null || _wipSentOptions.Length != indices.Length) return;
+
+                        // Someone's trying to send before the wait is up
+                        if (_sentenceWait != null) return;
+                        _sentenceWait = new CancellationTokenSource();
+
+                        string[] choices = new string[indices.Length];
+                        for(int i = 0; i < indices.Length; i++)
+                        {
+                            int d = indices[i];
+                            string[] opts = _wipSentOptions[i];
+                            if (d is < 0 || d >= opts.Length) return;
+                            choices[i] = opts[d];
+                        }
+                        string sentence;
+                        try
+                        {
+                            sentence = string.Format(_wipSentBase, choices);
+                        }
+                        catch(FormatException)
+                        {
+                            _sentenceWait.Dispose();
+                            _sentenceWait = null;
+                            sentence = "An error occurred.";
+                            return;
+                        }
+                        await clients.Group(JoinCode).SendAsync("SentenceSelected", sentence);
+                        await NewSentence(sentence);
+
+                        // Player has to wait 4 seconds before submitting another sentence
+                        await AsyncUtil.TaskDelayDelta(4000, started, _sentenceWait.Token);
+                        bool succ = !_sentenceWait.IsCancellationRequested;
                         _sentenceWait.Dispose();
                         _sentenceWait = null;
-                        sentence = "An error occurred.";
+                        if(succ) await clients.Client(MemUp.ConnectionId).SendAsync("SentenceOptions", _wipSentBase, _wipSentOptions);
                         return;
                     }
-                    await clients.Group(JoinCode).SendAsync("SentenceSelected", sentence);
-                    await NewSentence(sentence);
-
-                    // Player has to wait 4 seconds before submitting another sentence
-                    int waitMs = 4000 - (DateTime.Now - started).Milliseconds;
-                    bool succ = waitMs <= 0 || await AsyncUtil.TaskDelay(waitMs, _sentenceWait.Token);
-                    _sentenceWait.Dispose();
-                    _sentenceWait = null;
-                    if(succ) await clients.Client(MemUp.ConnectionId).SendAsync("SentenceOptions", _wipSentBase, _wipSentOptions);
-                    return;
                 case "GuessWord":
                             if (m is null || _stage != Stage.GuessWord) return;
                             // Host cannot execute this
@@ -246,12 +248,13 @@ namespace Riffle.Models.Games
                             {
                                 string original = MemUp.SecretWord ?? throw new InvalidOperationException();
                                 await clients.Group(JoinCode).SendAsync("SuccessfulGuess", connId, original);
+                                DateTime started = DateTime.Now;
                                 if (!await NextUser())
                                 {
                                     // Cancel the sentence gen process (it will dispose and take care of it)
                                     _sentenceWait?.Cancel();
                                     // 7 second delay for client animations
-                                    await Task.Delay(7000);
+                                    await AsyncUtil.TaskDelayDelta(7000, started);
 
                                     await Task.WhenAll(
                                         clients.GroupExcept(JoinCode, [ MemUp.ConnectionId ]).SendAsync("GuessingStarted"),
