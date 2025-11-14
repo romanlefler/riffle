@@ -117,7 +117,7 @@ namespace Riffle.Models.Games
             string optPrompt =
                 $"Output valid JSON containing an array of ${blanks} items where the items are arrays of 4 random nouns or adjectives.\n" +
                 $"Make some of them kinda related to <phrase>{MemUp.SecretWord}</phrase> but most of them not.\n" +
-                "No sentences, no extra text, just the raw JSON data.\nDO NOT USE ANY OF THESE WORDS: " +
+                $"No sentences, no extra text, just the raw JSON data.\nDO NOT USE ANY OF THESE WORDS: {MemUp.SecretWord}, " +
                 string.Join(", ", _usedWords);
             var optMsg = OllamaService.ChatMessage.User(optPrompt);
             string resp = await _ollamaClient.ChatAsync([sysMsg, outMsg, optMsg], 0.5);
