@@ -224,8 +224,8 @@ namespace Riffle.Models.Games
                     await NewSentence(sentence);
 
                     // Player has to wait 4 seconds before submitting another sentence
-                    double deltaMs = (DateTime.Now - started).Milliseconds;
-                    bool succ = await AsyncUtil.TaskDelay(4000 - (int)deltaMs, _sentenceWait.Token);
+                    int waitMs = 4000 - (DateTime.Now - started).Milliseconds;
+                    bool succ = waitMs <= 0 || await AsyncUtil.TaskDelay(waitMs, _sentenceWait.Token);
                     _sentenceWait.Dispose();
                     _sentenceWait = null;
                     if(succ) await clients.Client(MemUp.ConnectionId).SendAsync("SentenceOptions", _wipSentBase, _wipSentOptions);
