@@ -11,11 +11,14 @@ namespace Riffle.Hubs
     public class RoomHub : Hub
     {
         private readonly BadWordService _badWordService;
+        private readonly OllamaService _ollamaClient;
 
-        public RoomHub(BadWordService badWordService)
+        public RoomHub(BadWordService badWordService, OllamaService ollamaClientService)
         {
             _ = badWordService ?? throw new Exception("Bad word service was null.");
+            _ = ollamaClientService ?? throw new Exception("Ollama Client service was null.");
             _badWordService = badWordService;
+            _ollamaClient = ollamaClientService;
         }
 
         public async Task CreateRoom(int game)
@@ -33,7 +36,7 @@ namespace Riffle.Hubs
                 switch(gtype)
                 {
                     case GameType.Roundabout:
-                        room = new RoundaboutRoom(_badWordService, host);
+                        room = new RoundaboutRoom(_badWordService, _ollamaClient, host);
                         break;
                     default:
                         await Clients.Caller.SendAsync("RoomError", "Not a valid game ID.");

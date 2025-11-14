@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.SignalR;
 using Riffle.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.Configure<BuildCfg>(builder.Configuration.GetSection("BuildCfg"));
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -29,6 +30,8 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
+
+builder.Services.AddHttpClient<OllamaService>();
 
 #if DEBUG
 builder.Services.AddSignalR(options =>

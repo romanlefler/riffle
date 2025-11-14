@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.WebUtilities;
 using Riffle.Services;
 using Riffle.Utilities;
 
@@ -10,6 +12,7 @@ namespace Riffle.Models.Games
         private const int MAX_PLAYER_COUNT = 8;
 
 
+        private readonly Random _random = new();
         private readonly List<RoundaboutMember> _members;
 
         private Stage _stage;
@@ -29,8 +32,8 @@ namespace Riffle.Models.Games
 
         private RoundaboutMember MemUp { get => _members[_userUp]; }
 
-        public RoundaboutRoom(BadWordService badWordService, string hostConnId) :
-            base(badWordService, hostConnId, GameType.Roundabout)
+        public RoundaboutRoom(BadWordService badWordService, OllamaService ollamaClient, string hostConnId) :
+            base(badWordService, ollamaClient, hostConnId, GameType.Roundabout)
         {
             _stage = Stage.Lobby;
             _members = new(8);
@@ -75,13 +78,13 @@ namespace Riffle.Models.Games
             return true;
         }
 
-        private void StartGuessing()
+        private async Task StartGuessing()
         {
-            SetUserUp(0);
+            await SetUserUp(0);
             _stage = Stage.GuessWord;
         }
 
-        private void SetUserUp(int userIndex)
+        private async Task SetUserUp(int userIndex)
         {
             _userUp = userIndex;
             string secret = MemUp.SecretWord ?? throw new InvalidOperationException("Secret word was null.");
@@ -91,13 +94,37 @@ namespace Riffle.Models.Games
             _secretWord = NormString.NormalizeString(secret);
 
             _sentences.Clear();
-            GenSentenceInfo();
+            await GenSentenceInfo();
         }
 
-        private void GenSentenceInfo()
+        private async Task GenSentenceInfo()
         {
-            _wipSentBase = "It's a {0} {1}.";
-            _wipSentOptions = [ [ "colorful", "dusty" ], [ "experience", "spot" ] ];
+            var sysMsg = OllamaService.ChatMessage.System("Only output raw data. No explanations. Do not label data. PAY ATTENTION TO NUMBERS. \n");
+
+            int blanks = _random.Next(2, 4);
+            string fills = blanks == 2 ? "{0} and {1}" : "{0} {1} and {2}";
+
+            string basePrompt = $"Give me a sentence with {blanks} blanks in it " +
+                $"<IMPORTANT>represented by {fills} for substitution</IMPORTANT>. Make it very vague but short and creative, no more than a few words. " +
+                "Output NOTHING EXCEPT THE SENTENCE, with no extra quotes or formatting around it. Should contain MAX 10 words. DO NOT use the word " +
+                $"<phrase>{MemUp.SecretWord}</phrase>.";
+            var baseMsg = OllamaService.ChatMessage.User(basePrompt);
+            _wipSentBase = await _ollamaClient.ChatAsync([ sysMsg, baseMsg ], 0.4);
+            var outMsg = OllamaService.ChatMessage.Assistant(_wipSentBase);
+            string optPrompt =
+                $"Output valid JSON containing an array of ${blanks} items where the items are arrays of 4 random nouns or adjectives.\n" +
+                $"Make some of them kinda related to <phrase>{MemUp.SecretWord}</phrase> but most of them not.\n" +
+                "No sentences, no extra text, just the raw JSON data.\n";
+            var optMsg = OllamaService.ChatMessage.User(optPrompt);
+            string resp = await _ollamaClient.ChatAsync([sysMsg, baseMsg, outMsg, optMsg], 0.5);
+            string[][]? cols = JsonUtil.TryDeserialize<string[][]>(resp);
+            if (cols is null || cols.Length != blanks) throw new Exception("AI messed up columns. Msg: " + resp);
+            
+            for(int i = 0; i < blanks; i++)
+            {
+                if (cols[i].Length != 4) throw new Exception("AI messed up 4 words. Msg: " + resp);
+            }
+            _wipSentOptions = cols;
         }
 
         private bool TryGuess(string guess)
@@ -114,21 +141,21 @@ namespace Riffle.Models.Games
         /// 
         /// </summary>
         /// <returns>True if the round is over.</returns>
-        private bool NextUser()
+        private async Task<bool> NextUser()
         {
             if (++_userUp >= _members.Count)
             {
-                SetUserUp(0);
+                await SetUserUp(0);
                 return true;
             }
-            SetUserUp(_userUp);
+            await SetUserUp(_userUp);
             return false;
         }
 
-        private void NewSentence(string sentence)
+        private async Task NewSentence(string sentence)
         {
             _sentences.Add(sentence);
-            GenSentenceInfo();
+            await GenSentenceInfo();
         }
 
         public override async Task StringMsg(string connId, IHubCallerClients clients, string msgName, string msgContent)
@@ -149,7 +176,7 @@ namespace Riffle.Models.Games
 
                     if (AllPlayersChose())
                     {
-                        StartGuessing();
+                        await StartGuessing();
                         await Task.WhenAll(
                             clients.GroupExcept(JoinCode, [ MemUp.ConnectionId ]).SendAsync("GuessingStarted"),
                             clients.Client(MemUp.ConnectionId).SendAsync("SentenceOptions", _wipSentBase, _wipSentOptions)
@@ -191,7 +218,7 @@ namespace Riffle.Models.Games
                         sentence = "An error occurred.";
                         return;
                     }
-                    NewSentence(sentence);
+                    await NewSentence(sentence);
                     await clients.Group(JoinCode).SendAsync("SentenceSelected", sentence);
 
                     // Player has to wait 4 seconds before submitting another sentence
@@ -211,7 +238,7 @@ namespace Riffle.Models.Games
                             {
                                 string original = MemUp.SecretWord ?? throw new InvalidOperationException();
                                 await clients.Group(JoinCode).SendAsync("SuccessfulGuess", connId, original);
-                                if (!NextUser())
+                                if (!await NextUser())
                                 {
                                     // Cancel the sentence gen process (it will dispose and take care of it)
                                     _sentenceWait?.Cancel();

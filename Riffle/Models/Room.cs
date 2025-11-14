@@ -9,7 +9,8 @@ namespace Riffle.Models
 {
     public abstract class Room
     {
-        private readonly BadWordService _badWordService;
+        protected readonly BadWordService _badWordService;
+        protected readonly OllamaService _ollamaClient;
 
         public string JoinCode { get; }
 
@@ -17,7 +18,7 @@ namespace Riffle.Models
 
         public GameType Game { get; }
 
-        public Room(BadWordService badWordService, string hostConnectionId, GameType game)
+        public Room(BadWordService badWordService, OllamaService ollamaClient, string hostConnectionId, GameType game)
         {
             ArgumentNullException.ThrowIfNullOrWhiteSpace(hostConnectionId, nameof(hostConnectionId));
 
@@ -27,6 +28,9 @@ namespace Riffle.Models
 
             HostConnectionId = hostConnectionId;
             Game = game;
+
+            _badWordService = badWordService;
+            _ollamaClient = ollamaClient;
         }
 
         public abstract void RemoveMember(string connectionId);
