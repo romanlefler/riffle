@@ -23,6 +23,35 @@ const sentMsg = document.getElementById("sent-msg") as HTMLParagraphElement;
 const sentCol = document.getElementById("sent-columns") as HTMLDivElement;
 const sentSubmit = document.getElementById("sent-submit") as HTMLButtonElement;
 
+function shrinkFontSize(elem : HTMLElement) {
+    let sz = parseFloat(elem.style.fontSize);
+    if(isNaN(sz)) sz = 1.0;
+    elem.style.fontSize = `${sz * 0.9}em`;
+}
+
+function verifyColSize() {
+    sentCol.style.fontSize = "1.0em";
+    const buttons : NodeListOf<HTMLButtonElement> = sentCol.querySelectorAll(".col button");
+    for(let b of buttons) {
+        let i = 0;
+        while(b.scrollWidth > b.clientWidth) {
+            shrinkFontSize(b);
+            if(++i > 10) break;
+        }
+    }
+
+    const last : HTMLButtonElement | null = sentCol.querySelector(".col:last-child button:last-child");
+    if(!last) return;
+    let rect = last.getBoundingClientRect();
+
+    let i = 0;
+    while(rect.bottom > window.innerHeight) {
+        shrinkFontSize(sentCol);
+        if (++i > 10) break;
+        rect = last.getBoundingClientRect();
+    }
+}
+
 room.hubConn.on("GameStarted", () => {
     
     choiceMsg.textContent = "Choose your secret word!";
@@ -85,6 +114,8 @@ function showSentenceOptions(options: string[][]) {
         sentScreen.style.display = "none";
     }
     sentSubmit.addEventListener("click", submitSentence);
+
+    requestAnimationFrame(() => verifyColSize());
 }
 
 room.hubConn.on("ChoiceAccepted", () => {
@@ -148,6 +179,8 @@ async function main() {
     lobbyMsg.textContent = "Waiting for Host to Start";
 
 }
+
+window.addEventListener("resize", () => verifyColSize());
 
 main().catch(fatalErrorDialog);
 room.addRoomErrorListener(fatalErrorDialog);
